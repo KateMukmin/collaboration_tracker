@@ -731,6 +731,10 @@
             </select>
         </div>
         <div class="toolbar-right">
+            <button class="btn-export" id="btn-export-all" onclick="exportAllEpics()" style="display:block;">
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v6M3 5l2.5 2.5L8 5M1 9h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Export All CSV
+            </button>
             <div class="view-toggle">
                 <button class="view-btn active" id="btn-epic-view" onclick="setView('epic')">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M1 7h12M1 11h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -781,8 +785,8 @@ const PRIORITIES = [
 
 const ASSIGNEES = ['Michelle', 'Kate', 'Pooja', 'Developers', 'Tony'];
 
-// API config — Vercel backend
-const API_URL = '/api/data';
+// API config
+const API_URL = 'https://collaborationtracker.vercel.app/api/data';
 
 // Data store
 let data = MONTHS.map((m, i) => ({ id: 'month-' + i, name: m, epics: [] }));
@@ -1136,6 +1140,43 @@ function exportMonth(event, monthId) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = `${month.name}-epics.csv`; a.click();
+    URL.revokeObjectURL(url);
+}
+
+function exportAllEpics() {
+    // Collect all epics that match current filters, respecting current sort
+    let allEpics = [];
+    data.forEach(month => {
+        month.epics.forEach(epic => {
+            if (!searchQuery && !filterStatus && !filterAssignee || epicMatchesFilters(epic)) {
+                allEpics.push({ epic, monthName: month.name });
+            }
+        });
+    });
+    allEpics = sortEpics(allEpics.map(item => item.epic)).map(epic => {
+        const month = data.find(m => m.epics.some(e => e.id === epic.id));
+        return { epic, monthName: month ? month.name : '' };
+    });
+
+    if (allEpics.length === 0) {
+        alert('No epics to export.');
+        return;
+    }
+
+    const rows = [['Month', 'Epic', 'Status', 'Priority', 'Description', 'Assignees (all)', ...STATUSES.map(s => s.label + ' - Target Date'), 'Links', 'Notes']];
+    allEpics.forEach(({ epic, monthName }) => {
+        const allAssignees = [...new Set(Object.values(epic.statusData).flatMap(sd => sd.assignees))].join('; ');
+        const targetDates = STATUSES.map(s => epic.statusData[s.key]?.targetDate || '');
+        const links = (epic.links || []).map(l => l.label ? `${l.label}: ${l.url}` : l.url).join('; ');
+        const notes = (epic.notes || []).map(n => `[${n.author} - ${n.date}]: ${n.text}`).join(' | ');
+        rows.push([monthName, epic.title, epic.status, epic.priority, epic.description || '', allAssignees, ...targetDates, links, notes]);
+    });
+
+    const csv = rows.map(r => r.map(cell => `"${(cell||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `all-epics.csv`; a.click();
     URL.revokeObjectURL(url);
 }
 
