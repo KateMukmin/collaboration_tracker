@@ -677,6 +677,20 @@
             color: var(--text-light); font-size: 0.875rem;
         }
         .no-results svg { margin-bottom: 0.75rem; opacity: 0.3; }
+
+        /* CROSS-MONTH DIVIDER */
+        .cross-month-divider {
+            display: flex; align-items: center; gap: 0.75rem;
+            margin: 0.75rem 0 0.5rem;
+        }
+        .cross-month-divider::before, .cross-month-divider::after {
+            content: ''; flex: 1; height: 1px; background: var(--lighter2); opacity: 0.4;
+        }
+        .cross-month-divider span {
+            font-size: 0.68rem; font-weight: 600; color: var(--lighter);
+            text-transform: uppercase; letter-spacing: 0.06em;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -955,6 +969,14 @@ function sortEpics(epics) {
 // ---- RENDER MONTH VIEW ----
 function render() { renderMonthView(); }
 
+// Returns the month index (0-11) of the current status target date, or null
+function getEpicTargetMonth(epic) {
+    const targetDate = epic.statusData[epic.status]?.targetDate;
+    if (!targetDate) return null;
+    const month = new Date(targetDate + 'T00:00:00').getMonth(); // 0-indexed
+    return month;
+}
+
 function renderMonthView() {
     const container = document.getElementById('months-container');
     const openMonths = new Set([...container.querySelectorAll('.month-card.open')].map(el => el.dataset.id));
@@ -963,18 +985,33 @@ function renderMonthView() {
     container.innerHTML = '';
     const hasFilter = searchQuery || filterStatus || filterAssignee;
 
-    data.forEach(month => {
-        let epics = month.epics.filter(e => !hasFilter || epicMatchesFilters(e));
-        epics = sortEpics(epics);
+    data.forEach((month, monthIndex) => {
+        // Own epics
+        let ownEpics = month.epics.filter(e => !hasFilter || epicMatchesFilters(e));
+
+        // Cross-month epics: epics from OTHER months whose current status target date falls in this month
+        let crossEpics = [];
+        data.forEach((otherMonth, otherIndex) => {
+            if (otherIndex === monthIndex) return;
+            otherMonth.epics.forEach(epic => {
+                if (getEpicTargetMonth(epic) === monthIndex) {
+                    if (!hasFilter || epicMatchesFilters(epic)) {
+                        crossEpics.push({ epic, fromMonth: otherMonth.name });
+                    }
+                }
+            });
+        });
+
+        let allEpics = sortEpics(ownEpics);
+        const totalCount = month.epics.length;
 
         const card = document.createElement('div');
-        // Auto-open month if search has results inside it
-        const shouldOpen = openMonths.has(month.id) || (hasFilter && epics.length > 0);
+        const shouldOpen = openMonths.has(month.id) || (hasFilter && (allEpics.length > 0 || crossEpics.length > 0));
         card.className = 'month-card' + (shouldOpen ? ' open' : '');
         card.dataset.id = month.id;
 
-        const completed = epics.filter(e => e.status === 'completed').length;
-        const active = epics.length - completed;
+        const completed = allEpics.filter(e => e.status === 'completed').length;
+        const active = allEpics.length - completed;
 
         card.innerHTML = `
             <div class="month-header" onclick="toggleMonth('${month.id}')">
@@ -985,7 +1022,7 @@ function renderMonthView() {
                         </svg>
                     </div>
                     <span class="month-name">${month.name}</span>
-                    <span class="month-count">${month.epics.length} epic${month.epics.length !== 1 ? 's' : ''}</span>
+                    <span class="month-count">${totalCount} epic${totalCount !== 1 ? 's' : ''}${crossEpics.length > 0 ? ` + ${crossEpics.length} cross-month` : ''}</span>
                 </div>
                 <div class="month-stats">
                     <span class="stat-pill stat-done">${completed} completed</span>
@@ -997,10 +1034,13 @@ function renderMonthView() {
                 </div>
             </div>
             <div class="month-body">
-                ${epics.length === 0 && hasFilter
+                ${allEpics.length === 0 && crossEpics.length === 0 && hasFilter
                     ? `<div class="no-results" style="padding:1.5rem 0 0.5rem;">No epics match your filters in ${month.name}</div>`
-                    : epics.map(epic => renderEpic(epic, openEpics.has(epic.id))).join('')
+                    : allEpics.map(epic => renderEpic(epic, openEpics.has(epic.id))).join('')
                 }
+                ${crossEpics.length > 0 ? `<div class="cross-month-divider" id="cross-divider-${month.id}">
+                        <span>From other months — target date in ${month.name}</span>
+                    </div>` : ''}
                 ${!hasFilter ? `<button class="btn-add-epic" onclick="addEpic('${month.id}')">
                     <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
                     Add Epic
@@ -1008,6 +1048,28 @@ function renderMonthView() {
             </div>
         `;
         container.appendChild(card);
+
+        // Insert cross-month epics via DOM (not innerHTML) so they stay interactive
+        if (crossEpics.length > 0) {
+            const monthBody = card.querySelector('.month-body');
+            const addBtn = monthBody.querySelector('.btn-add-epic');
+            crossEpics.forEach(({ epic, fromMonth }) => {
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+                const tag = document.createElement('span');
+                tag.className = 'epic-view-month-tag';
+                tag.style.cssText = 'position:absolute;top:0.9rem;right:3.5rem;z-index:2;';
+                tag.textContent = 'from ' + fromMonth;
+                wrapper.appendChild(tag);
+                const tmp = document.createElement('div');
+                tmp.innerHTML = renderEpic(epic, openEpics.has(epic.id));
+                while (tmp.firstChild) wrapper.appendChild(tmp.firstChild);
+                if (addBtn) monthBody.insertBefore(wrapper, addBtn);
+                else monthBody.appendChild(wrapper);
+            });
+        }
+
+
     });
 
     document.querySelectorAll('.assignee-multi').forEach(el => {
@@ -1024,12 +1086,12 @@ function renderEpicView() {
     container.innerHTML = '';
     const hasFilter = searchQuery || filterStatus || filterAssignee;
 
-    // Collect all epics with their month label
+    // Collect all epics with their home month
     let allEpics = [];
     data.forEach(month => {
         month.epics.forEach(epic => {
             if (!hasFilter || epicMatchesFilters(epic)) {
-                allEpics.push({ epic, monthName: month.name, monthId: month.id });
+                allEpics.push({ epic, monthName: month.name, monthId: month.id, isCross: false });
             }
         });
     });
@@ -1058,21 +1120,63 @@ function renderEpicView() {
     // Build groups
     let groups = [];
     if (sortBy === 'status') {
+        // Group by status — show month tag on each epic
         STATUSES.forEach(s => {
             const items = allEpics.filter(item => item.epic.status === s.key);
             if (items.length === 0) return;
             groups.push({ label: s.label, dot: s.dot, items, showMonth: true });
         });
     } else {
-        const byMonth = {};
+        // Group by month — include cross-month epics in their target month section
+        const byMonth = {}; // monthId -> { name, ownItems, crossItems }
         const monthOrder = [];
+
+        // First pass: own epics
         allEpics.forEach(item => {
-            if (!byMonth[item.monthId]) { byMonth[item.monthId] = { name: item.monthName, items: [] }; monthOrder.push(item.monthId); }
-            byMonth[item.monthId].items.push(item);
+            if (!byMonth[item.monthId]) {
+                byMonth[item.monthId] = { name: item.monthName, ownItems: [], crossItems: [] };
+                monthOrder.push(item.monthId);
+            }
+            byMonth[item.monthId].ownItems.push(item);
         });
+
+        // Second pass: cross-month — epics whose current status target date falls in a different month
+        data.forEach((month, monthIndex) => {
+            month.epics.forEach(epic => {
+                if (!hasFilter || epicMatchesFilters(epic)) {
+                    const targetMonthIndex = getEpicTargetMonth(epic);
+                    if (targetMonthIndex !== null && targetMonthIndex !== monthIndex) {
+                        const targetMonthId = 'month-' + targetMonthIndex;
+                        const targetMonthName = MONTHS[targetMonthIndex];
+                        if (!byMonth[targetMonthId]) {
+                            byMonth[targetMonthId] = { name: targetMonthName, ownItems: [], crossItems: [] };
+                            // Insert in correct calendar order
+                            const insertIdx = monthOrder.findIndex(mid => {
+                                const idx = parseInt(mid.replace('month-', ''));
+                                return idx > targetMonthIndex;
+                            });
+                            if (insertIdx === -1) monthOrder.push(targetMonthId);
+                            else monthOrder.splice(insertIdx, 0, targetMonthId);
+                        }
+                        byMonth[targetMonthId].crossItems.push({
+                            epic, monthName: month.name, monthId: month.id, isCross: true
+                        });
+                    }
+                }
+            });
+        });
+
+        // Sort monthOrder by calendar index
+        monthOrder.sort((a, b) => parseInt(a.replace('month-', '')) - parseInt(b.replace('month-', '')));
+
         monthOrder.forEach(mid => {
             const g = byMonth[mid];
-            groups.push({ label: g.name, dot: null, items: g.items, showMonth: false });
+            if (g.ownItems.length === 0 && g.crossItems.length === 0) return;
+            groups.push({
+                label: g.name, dot: null,
+                items: g.ownItems, crossItems: g.crossItems,
+                showMonth: false
+            });
         });
     }
 
@@ -1081,19 +1185,18 @@ function renderEpicView() {
         groupEl.className = 'epic-view-group';
 
         // Header
+        const totalCount = (group.items?.length || 0) + (group.crossItems?.length || 0);
         const headerEl = document.createElement('div');
         headerEl.className = 'epic-view-group-header';
         headerEl.innerHTML = group.dot
-            ? `<span style="background:${group.dot};width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;"></span>${group.label} <span style="color:var(--text-light);font-weight:400;">(${group.items.length})</span>`
-            : `${group.label} <span style="color:var(--text-light);font-weight:400;">(${group.items.length})</span>`;
+            ? `<span style="background:${group.dot};width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;"></span>${group.label} <span style="color:var(--text-light);font-weight:400;">(${totalCount})</span>`
+            : `${group.label} <span style="color:var(--text-light);font-weight:400;">(${totalCount})</span>`;
         groupEl.appendChild(headerEl);
 
-        // Epics — use a temp div to parse HTML then move nodes into DOM
-        group.items.forEach(item => {
+        // Own epics
+        (group.items || []).forEach(item => {
             const wrapper = document.createElement('div');
             wrapper.style.position = 'relative';
-
-            // Month tag shown when grouped by status
             if (group.showMonth) {
                 const tag = document.createElement('span');
                 tag.className = 'epic-view-month-tag';
@@ -1101,16 +1204,36 @@ function renderEpicView() {
                 tag.textContent = item.monthName;
                 wrapper.appendChild(tag);
             }
-
-            // Parse epic HTML into real DOM nodes
             const tmp = document.createElement('div');
             tmp.innerHTML = renderEpic(item.epic, false);
             while (tmp.firstChild) wrapper.appendChild(tmp.firstChild);
-
             groupEl.appendChild(wrapper);
         });
 
+        // Cross-month epics with divider
+        if (group.crossItems && group.crossItems.length > 0) {
+            const divider = document.createElement('div');
+            divider.className = 'cross-month-divider';
+            divider.innerHTML = `<span>From other months — target date in ${group.label}</span>`;
+            groupEl.appendChild(divider);
+
+            group.crossItems.forEach(item => {
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+                const tag = document.createElement('span');
+                tag.className = 'epic-view-month-tag';
+                tag.style.cssText = 'position:absolute;top:0.9rem;right:3.5rem;z-index:2;';
+                tag.textContent = 'from ' + item.monthName;
+                wrapper.appendChild(tag);
+                const tmp = document.createElement('div');
+                tmp.innerHTML = renderEpic(item.epic, false);
+                while (tmp.firstChild) wrapper.appendChild(tmp.firstChild);
+                groupEl.appendChild(wrapper);
+            });
+        }
+
         container.appendChild(groupEl);
+
     });
 
     // Re-attach all listeners
