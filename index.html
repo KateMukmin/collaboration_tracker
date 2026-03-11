@@ -969,12 +969,23 @@ function sortEpics(epics) {
 // ---- RENDER MONTH VIEW ----
 function render() { renderMonthView(); }
 
-// Returns the month index (0-11) of the current status target date, or null
+// Returns all month indexes (0-11) where this epic has any target date set
+function getEpicTargetMonths(epic) {
+    const months = new Set();
+    STATUSES.forEach(s => {
+        const targetDate = epic.statusData[s.key]?.targetDate;
+        if (targetDate) {
+            months.add(new Date(targetDate + 'T00:00:00').getMonth());
+        }
+    });
+    return months;
+}
+
+// Keep old single-value version for backwards compat (used nowhere now)
 function getEpicTargetMonth(epic) {
     const targetDate = epic.statusData[epic.status]?.targetDate;
     if (!targetDate) return null;
-    const month = new Date(targetDate + 'T00:00:00').getMonth(); // 0-indexed
-    return month;
+    return new Date(targetDate + 'T00:00:00').getMonth();
 }
 
 function renderMonthView() {
@@ -989,12 +1000,13 @@ function renderMonthView() {
         // Own epics
         let ownEpics = month.epics.filter(e => !hasFilter || epicMatchesFilters(e));
 
-        // Cross-month epics: epics from OTHER months whose current status target date falls in this month
+        // Cross-month epics: epics from OTHER months that have ANY target date in this month
         let crossEpics = [];
         data.forEach((otherMonth, otherIndex) => {
             if (otherIndex === monthIndex) return;
             otherMonth.epics.forEach(epic => {
-                if (getEpicTargetMonth(epic) === monthIndex) {
+                const targetMonths = getEpicTargetMonths(epic);
+                if (targetMonths.has(monthIndex)) {
                     if (!hasFilter || epicMatchesFilters(epic)) {
                         crossEpics.push({ epic, fromMonth: otherMonth.name });
                     }
@@ -1140,17 +1152,17 @@ function renderEpicView() {
             byMonth[item.monthId].ownItems.push(item);
         });
 
-        // Second pass: cross-month — epics whose current status target date falls in a different month
+        // Second pass: cross-month — epics that have ANY target date in a different month
         data.forEach((month, monthIndex) => {
             month.epics.forEach(epic => {
                 if (!hasFilter || epicMatchesFilters(epic)) {
-                    const targetMonthIndex = getEpicTargetMonth(epic);
-                    if (targetMonthIndex !== null && targetMonthIndex !== monthIndex) {
+                    const targetMonths = getEpicTargetMonths(epic);
+                    targetMonths.forEach(targetMonthIndex => {
+                        if (targetMonthIndex === monthIndex) return; // skip home month
                         const targetMonthId = 'month-' + targetMonthIndex;
                         const targetMonthName = MONTHS[targetMonthIndex];
                         if (!byMonth[targetMonthId]) {
                             byMonth[targetMonthId] = { name: targetMonthName, ownItems: [], crossItems: [] };
-                            // Insert in correct calendar order
                             const insertIdx = monthOrder.findIndex(mid => {
                                 const idx = parseInt(mid.replace('month-', ''));
                                 return idx > targetMonthIndex;
@@ -1161,7 +1173,7 @@ function renderEpicView() {
                         byMonth[targetMonthId].crossItems.push({
                             epic, monthName: month.name, monthId: month.id, isCross: true
                         });
-                    }
+                    });
                 }
             });
         });
