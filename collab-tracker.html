@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product × Dev Collaboration Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --main: #00346B;
+            --darker: #00294F;
+            --lighter: #004A91;
+            --lighter2: #66A9D9;
+            --subtle: #D4E7F5;
+            --text-dark: #2B2A29;
+            --text-mid: #727271;
+            --text-light: #B3B3B2;
+            --border: rgba(43,42,41,0.1);
+            --input-fill: rgba(228,231,233,0.4);
+            --table-content: rgba(231,231,231,0.2);
+            --failure: #DF252A;
+            --warning: #F59A00;
+            --success: #1BB161;
+            --white: #ffffff;
+            --bg: #f0f4f8;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        /* HEADER */
+        .app-header {
+            background: var(--darker);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+        }
+        .app-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .logo-circle {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--lighter2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 700; color: var(--white);
+            letter-spacing: 0.05em;
+        }
+        .logo-text { color: var(--white); font-size: 1rem; font-weight: 600; }
+        .logo-text span { color: var(--lighter2); }
+        .header-meta { color: var(--lighter2); font-size: 0.75rem; }
+
+        /* MAIN */
+        .main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--main);
+            margin-bottom: 0.25rem;
+        }
+        .page-sub {
+            color: var(--text-mid);
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+
+        /* MONTH CARD */
+        .month-card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,41,79,0.07);
+            margin-bottom: 0.875rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: box-shadow 0.2s;
+        }
+        .month-card:hover { box-shadow: 0 4px 16px rgba(0,41,79,0.12); }
+
+        .month-header {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .month-header:hover { background: var(--subtle); }
+
+        .month-left { display: flex; align-items: center; gap: 1rem; }
+        .month-chevron {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: var(--subtle);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.25s, background 0.2s;
+            flex-shrink: 0;
+        }
+        .month-chevron svg { transition: transform 0.25s; }
+        .month-card.open .month-chevron { background: var(--main); }
+        .month-card.open .month-chevron svg path { stroke: white; }
+        .month-card.open .month-chevron { transform: none; }
+        .month-card.open .month-chevron svg { transform: rotate(180deg); }
+
+        .month-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--main);
+        }
+        .month-count {
+            font-size: 0.75rem;
+            color: var(--text-mid);
+            background: var(--input-fill);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+        .month-stats { display: flex; gap: 0.5rem; }
+        .stat-pill {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.2rem 0.65rem;
+            border-radius: 20px;
+        }
+        .stat-done { background: rgba(27,177,97,0.12); color: #0e7a42; }
+        .stat-active { background: rgba(0,74,145,0.1); color: var(--lighter); }
+
+        .month-body {
+            display: none;
+            padding: 0 1.5rem 1.25rem;
+        }
+        .month-card.open .month-body { display: block; }
+
+        /* ADD EPIC BTN */
+        .btn-add-epic {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--main);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1.1rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            margin-bottom: 0.25rem;
+            transition: background 0.15s, transform 0.1s;
+        }
+        .btn-add-epic:hover { background: var(--lighter); transform: translateY(-1px); }
+        .btn-add-epic:active { transform: translateY(0); }
+
+        /* EPIC CARD */
+        .epic-card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+            transition: box-shadow 0.2s;
+        }
+        .epic-card:hover { box-shadow: 0 2px 10px rgba(0,41,79,0.09); }
+
+        .epic-header {
+            padding: 0.875rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            background: var(--table-content);
+            gap: 1rem;
+        }
+        .epic-header:hover { background: var(--subtle); }
+
+        .epic-left {
+            display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;
+        }
+        .epic-chevron {
+            width: 18px; height: 18px; flex-shrink: 0;
+            color: var(--text-mid);
+            transition: transform 0.2s;
+        }
+        .epic-card.open .epic-chevron { transform: rotate(90deg); color: var(--main); }
+
+        .epic-title-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .epic-title-input-inline {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            border: none;
+            background: transparent;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            flex: 1;
+            min-width: 0;
+        }
+        .epic-title-input-inline::placeholder { color: var(--text-light); font-weight: 400; }
+
+        .epic-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+
+        .status-badge {
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .s-rd { background: #e8f4fd; color: #1565a3; }
+        .s-wr { background: #fff3e0; color: #b45309; }
+        .s-gr { background: #f3e8ff; color: #6b21a8; }
+        .s-es { background: #fef9c3; color: #854d0e; }
+        .s-ws { background: #e0f2fe; color: #0369a1; }
+        .s-co { background: #dcfce7; color: #166534; }
+        .s-te { background: #d1fae5; color: #065f46; }
+        .s-rp { background: #fce7f3; color: #9d174d; }
+        .s-done { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+
+        .priority-badge {
+            font-size: 0.68rem; font-weight: 700;
+            padding: 0.2rem 0.55rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .p-blocker { background: #dc2626; color: white; }
+        .p-critical { background: #ef4444; color: white; }
+        .p-high { background: #f97316; color: white; }
+        .p-medium { background: #eab308; color: white; }
+        .p-low { background: #3b82f6; color: white; }
+
+        .btn-delete-epic {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-light); font-size: 1rem; padding: 0.2rem 0.35rem;
+            border-radius: 4px; transition: color 0.15s, background 0.15s;
+            line-height: 1;
+        }
+        .btn-delete-epic:hover { color: var(--failure); background: rgba(223,37,42,0.08); }
+
+        /* LINKS */
+        .links-list { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.4rem; }
+        .link-row {
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .link-label-input {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.78rem;
+            color: var(--text-dark);
+            background: var(--white);
+            border: 1px solid rgba(43,42,41,0.15);
+            border-radius: 5px;
+            padding: 0.35rem 0.6rem;
+            outline: none;
+            width: 140px;
+            flex-shrink: 0;
+            transition: border-color 0.15s;
+        }
+        .link-url-input {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.78rem;
+            color: var(--lighter);
+            background: var(--white);
+            border: 1px solid rgba(43,42,41,0.15);
+            border-radius: 5px;
+            padding: 0.35rem 0.6rem;
+            outline: none;
+            flex: 1;
+            transition: border-color 0.15s;
+        }
+        .link-label-input:focus, .link-url-input:focus { border-color: var(--lighter2); }
+        .link-open-btn {
+            background: none; border: none; cursor: pointer;
+            color: var(--lighter2); font-size: 1rem; padding: 0.2rem 0.3rem;
+            border-radius: 4px; transition: color 0.15s, background 0.15s;
+            text-decoration: none; line-height: 1; display: flex; align-items: center;
+        }
+        .link-open-btn:hover { color: var(--main); background: var(--subtle); }
+        .link-open-btn[disabled], .link-open-btn.disabled { opacity: 0.3; pointer-events: none; }
+        .btn-delete-link {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-light); font-size: 0.85rem; padding: 0.2rem 0.3rem;
+            border-radius: 4px; transition: color 0.15s, background 0.15s; line-height: 1;
+        }
+        .btn-delete-link:hover { color: var(--failure); background: rgba(223,37,42,0.08); }
+        .btn-add-link {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            background: none;
+            color: var(--main);
+            border: 1px dashed var(--lighter2);
+            border-radius: 5px;
+            padding: 0.3rem 0.75rem;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 0.25rem;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .btn-add-link:hover { background: var(--subtle); border-color: var(--main); }
+
+        /* NOTES */
+        .notes-compose {
+            display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem;
+        }
+        .notes-compose-row {
+            display: flex; gap: 0.5rem; align-items: flex-end;
+        }
+        .notes-author-input {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.78rem;
+            color: var(--text-dark);
+            background: var(--white);
+            border: 1px solid rgba(43,42,41,0.15);
+            border-radius: 5px;
+            padding: 0.35rem 0.6rem;
+            outline: none;
+            width: 150px;
+            flex-shrink: 0;
+            transition: border-color 0.15s;
+        }
+        .notes-author-input:focus { border-color: var(--lighter2); }
+        .notes-text-input {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            background: var(--white);
+            border: 1px solid rgba(43,42,41,0.15);
+            border-radius: 5px;
+            padding: 0.4rem 0.6rem;
+            outline: none;
+            flex: 1;
+            resize: vertical;
+            min-height: 62px;
+            transition: border-color 0.15s;
+        }
+        .notes-text-input:focus { border-color: var(--lighter2); }
+        .btn-add-note {
+            background: var(--main); color: white; border: none;
+            border-radius: 5px; padding: 0.4rem 0.9rem;
+            font-family: 'Poppins', sans-serif; font-size: 0.75rem; font-weight: 500;
+            cursor: pointer; white-space: nowrap; align-self: flex-end;
+            transition: background 0.15s;
+        }
+        .btn-add-note:hover { background: var(--lighter); }
+        .notes-feed {
+            display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.6rem;
+        }
+        .note-item {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            padding: 0.65rem 0.85rem;
+            position: relative;
+        }
+        .note-meta {
+            display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;
+        }
+        .note-author {
+            font-size: 0.72rem; font-weight: 700;
+            color: var(--main);
+            background: var(--subtle);
+            padding: 0.1rem 0.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--lighter2);
+        }
+        .note-date {
+            font-size: 0.68rem; color: var(--text-light);
+        }
+        .note-text {
+            font-size: 0.8rem; color: var(--text-dark); line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word;
+        }
+        .btn-delete-note {
+            position: absolute; top: 0.5rem; right: 0.5rem;
+            background: none; border: none; cursor: pointer;
+            color: var(--text-light); font-size: 0.8rem; padding: 0.15rem 0.3rem;
+            border-radius: 4px; transition: color 0.15s, background 0.15s; line-height: 1;
+        }
+        .btn-delete-note:hover { color: var(--failure); background: rgba(223,37,42,0.08); }
+
+        /* EPIC BODY */
+        .epic-body {
+            display: none;
+            padding: 1.25rem;
+            background: #fafbfc;
+            border-top: 1px solid var(--border);
+        }
+        .epic-card.open .epic-body { display: block; }
+
+        .section-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-mid);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 0.5rem;
+            margin-top: 1.25rem;
+        }
+        .section-label:first-child { margin-top: 0; }
+
+        /* TOP ROW */
+        .top-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .field-group { display: flex; flex-direction: column; gap: 0.3rem; }
+        .field-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-mid);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .field-input, .field-select {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            background: var(--white);
+            border: 1px solid rgba(43,42,41,0.2);
+            border-radius: 6px;
+            padding: 0.45rem 0.7rem;
+            outline: none;
+            transition: border-color 0.15s;
+            width: 100%;
+        }
+        .field-input:focus, .field-select:focus { border-color: var(--lighter2); }
+        textarea.field-input { resize: vertical; min-height: 70px; }
+
+        /* STATUS TABLE */
+        .status-table {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .status-table-header {
+            display: grid;
+            grid-template-columns: 160px 1fr 1fr;
+            background: var(--main);
+            padding: 0.5rem 1rem;
+            gap: 1rem;
+        }
+        .status-table-header span {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .status-row {
+            display: grid;
+            grid-template-columns: 160px 1fr 1fr;
+            padding: 0.6rem 1rem;
+            gap: 1rem;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+        .status-row:last-child { border-bottom: none; }
+        .status-row:hover { background: var(--subtle); }
+        .status-row:nth-child(even) { background: var(--table-content); }
+        .status-row:nth-child(even):hover { background: var(--subtle); }
+
+        .status-name-cell {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .status-dot {
+            width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+        }
+        .row-input {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.75rem;
+            color: var(--text-dark);
+            background: var(--white);
+            border: 1px solid rgba(43,42,41,0.15);
+            border-radius: 5px;
+            padding: 0.35rem 0.6rem;
+            outline: none;
+            width: 100%;
+            transition: border-color 0.15s;
+        }
+        .row-input:focus { border-color: var(--lighter2); }
+
+        /* MULTI-SELECT ASSIGNEE */
+        .assignee-multi {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            background: var(--white);
+            border: 1px solid rgba(43,42,41,0.15);
+            border-radius: 5px;
+            padding: 0.3rem 0.5rem;
+            min-height: 34px;
+            cursor: pointer;
+            position: relative;
+            transition: border-color 0.15s;
+        }
+        .assignee-multi:focus-within { border-color: var(--lighter2); }
+        .assignee-chip {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            background: var(--subtle);
+            color: var(--main);
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 0.15rem 0.45rem;
+            border-radius: 20px;
+            border: 1px solid var(--lighter2);
+        }
+        .assignee-chip-remove {
+            cursor: pointer; color: var(--lighter); font-size: 0.75rem; line-height: 1;
+            background: none; border: none; padding: 0; font-family: inherit;
+        }
+        .assignee-chip-remove:hover { color: var(--failure); }
+        .assignee-placeholder { font-size: 0.73rem; color: var(--text-light); padding: 0.1rem 0.1rem; align-self: center; }
+
+        .assignee-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0; right: 0;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            box-shadow: 0 6px 20px rgba(0,41,79,0.12);
+            z-index: 50;
+            overflow: hidden;
+            display: none;
+        }
+        .assignee-dropdown.open { display: block; }
+        .assignee-option {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.78rem;
+            cursor: pointer;
+            display: flex; align-items: center; gap: 0.5rem;
+            transition: background 0.12s;
+            color: var(--text-dark);
+        }
+        .assignee-option:hover { background: var(--subtle); }
+        .assignee-option.selected { background: rgba(0,74,145,0.07); color: var(--main); font-weight: 600; }
+        .assignee-option .check { color: var(--success); font-size: 0.75rem; width: 14px; }
+
+        .status-colors {
+            'r&d': '#1565a3',
+            'writing-requirements': '#b45309',
+            'grooming': '#6b21a8',
+            'estimating': '#854d0e',
+            'writing-stories': '#0369a1',
+            'coding': '#166534',
+            'testing': '#065f46',
+            'release-prep': '#9d174d',
+            'completed': '#166534'
+        }
+        /* TOOLBAR */
+        .toolbar {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;
+        }
+        .toolbar-left { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; flex: 1; }
+        .toolbar-right { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+
+        .search-wrap { position: relative; }
+        .search-input {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem; color: var(--text-dark);
+            background: var(--white);
+            border: 1px solid rgba(43,42,41,0.2);
+            border-radius: 6px;
+            padding: 0.45rem 0.7rem 0.45rem 2rem;
+            outline: none; width: 200px;
+            transition: border-color 0.15s, width 0.2s;
+        }
+        .search-input:focus { border-color: var(--lighter2); width: 260px; }
+
+        .toolbar-select {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.78rem; color: var(--text-dark);
+            background: var(--white);
+            border: 1px solid rgba(43,42,41,0.2);
+            border-radius: 6px;
+            padding: 0.45rem 0.7rem;
+            outline: none; cursor: pointer;
+            transition: border-color 0.15s;
+        }
+        .toolbar-select:focus { border-color: var(--lighter2); }
+
+        .view-toggle {
+            display: flex; border: 1px solid rgba(43,42,41,0.2);
+            border-radius: 6px; overflow: hidden;
+        }
+        .view-btn {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            background: var(--white); color: var(--text-mid);
+            border: none; padding: 0.45rem 0.85rem;
+            font-family: 'Poppins', sans-serif; font-size: 0.78rem; font-weight: 500;
+            cursor: pointer; transition: background 0.15s, color 0.15s;
+        }
+        .view-btn:first-child { border-right: 1px solid rgba(43,42,41,0.15); }
+        .view-btn.active { background: var(--main); color: white; }
+        .view-btn:not(.active):hover { background: var(--subtle); color: var(--main); }
+
+        .search-banner {
+            background: var(--subtle); border: 1px solid var(--lighter2);
+            border-radius: 8px; padding: 0.6rem 1rem;
+            font-size: 0.8rem; color: var(--main); font-weight: 500;
+            margin-bottom: 1rem;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .search-clear {
+            background: none; border: none; cursor: pointer;
+            color: var(--text-mid); font-size: 0.75rem; font-weight: 500;
+            padding: 0.15rem 0.4rem; border-radius: 4px;
+            transition: color 0.15s, background 0.15s;
+        }
+        .search-clear:hover { color: var(--failure); background: rgba(223,37,42,0.08); }
+
+        /* EXPORT BUTTON (per month) */
+        .btn-export {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            background: none; color: var(--text-mid);
+            border: 1px solid var(--border);
+            border-radius: 5px; padding: 0.3rem 0.65rem;
+            font-family: 'Poppins', sans-serif; font-size: 0.72rem; font-weight: 500;
+            cursor: pointer; transition: all 0.15s;
+        }
+        .btn-export:hover { background: var(--subtle); color: var(--main); border-color: var(--lighter2); }
+
+        /* EPIC VIEW */
+        .epic-view-group { margin-bottom: 1.5rem; }
+        .epic-view-group-header {
+            font-size: 0.7rem; font-weight: 700;
+            color: var(--text-mid); text-transform: uppercase;
+            letter-spacing: 0.09em; margin-bottom: 0.5rem;
+            padding-bottom: 0.35rem;
+            border-bottom: 2px solid var(--subtle);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .epic-view-month-tag {
+            font-size: 0.68rem; font-weight: 600;
+            background: var(--subtle); color: var(--main);
+            padding: 0.1rem 0.5rem; border-radius: 20px;
+            border: 1px solid var(--lighter2);
+        }
+
+        /* NO RESULTS */
+        .no-results {
+            text-align: center; padding: 3rem 1rem;
+            color: var(--text-light); font-size: 0.875rem;
+        }
+        .no-results svg { margin-bottom: 0.75rem; opacity: 0.3; }
+    </style>
+</head>
+<body>
+
+<header class="app-header">
+    <div class="logo">
+        <div class="logo-circle">FCA</div>
+        <span class="logo-text">Field Control <span>Analytics</span></span>
+    </div>
+    <span class="header-meta">Product × Dev Collaboration Tracker &nbsp;·&nbsp; <span id="hdate"></span> &nbsp;·&nbsp; <span id="save-status" style="transition: opacity 0.5s;"></span></span>
+</header>
+
+<div class="main">
+    <div class="page-title">Collaboration Tracker</div>
+    <div class="page-sub">Track epics across Product and Dev — assignees, statuses, and target dates per stage.</div>
+
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <div class="search-wrap">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="position:absolute;left:0.6rem;top:50%;transform:translateY(-50%);pointer-events:none;">
+                    <circle cx="6" cy="6" r="4.5" stroke="#727271" stroke-width="1.5"/>
+                    <path d="M9.5 9.5L12.5 12.5" stroke="#727271" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input class="search-input" type="text" id="search-input" placeholder="Search epics…" oninput="applyFilters()">
+            </div>
+            <select class="toolbar-select" id="filter-status" onchange="applyFilters()">
+                <option value="">All Statuses</option>
+                <option value="r&d">R&D</option>
+                <option value="writing-requirements">Writing Requirements</option>
+                <option value="grooming">Grooming</option>
+                <option value="estimating">Estimating</option>
+                <option value="writing-stories">Writing Stories</option>
+                <option value="coding">Coding</option>
+                <option value="testing">Testing</option>
+                <option value="release-prep">Release Prep</option>
+                <option value="completed">Completed</option>
+            </select>
+            <select class="toolbar-select" id="filter-assignee" onchange="applyFilters()">
+                <option value="">All Assignees</option>
+                <option>Michelle</option>
+                <option>Kate</option>
+                <option>Pooja</option>
+                <option>Developers</option>
+                <option>Tony</option>
+            </select>
+            <select class="toolbar-select" id="sort-by" onchange="applyFilters()">
+                <option value="">Sort: Default</option>
+                <option value="status">Sort by Status</option>
+                <option value="assignee">Sort by Assignee</option>
+                <option value="priority">Sort by Priority</option>
+            </select>
+        </div>
+        <div class="toolbar-right">
+            <div class="view-toggle">
+                <button class="view-btn active" id="btn-epic-view" onclick="setView('epic')">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 3h12M1 7h12M1 11h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    By Epic
+                </button>
+                <button class="view-btn" id="btn-month-view" onclick="setView('month')">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+                    By Month
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH RESULTS BANNER -->
+    <div id="search-banner" style="display:none;" class="search-banner"></div>
+
+    <!-- MONTH VIEW -->
+    <div id="months-container" style="display:none;"></div>
+
+    <!-- EPIC VIEW -->
+    <div id="epic-container"></div>
+</div>
+
+<script>
+document.getElementById('hdate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+const STATUSES = [
+    { key: 'r&d',                  label: 'R&D',                  dot: '#1565a3', cls: 's-rd' },
+    { key: 'writing-requirements', label: 'Writing Requirements', dot: '#b45309', cls: 's-wr' },
+    { key: 'grooming',             label: 'Grooming',             dot: '#6b21a8', cls: 's-gr' },
+    { key: 'estimating',           label: 'Estimating',           dot: '#854d0e', cls: 's-es' },
+    { key: 'writing-stories',      label: 'Writing Stories',      dot: '#0369a1', cls: 's-ws' },
+    { key: 'coding',               label: 'Coding',               dot: '#166534', cls: 's-co' },
+    { key: 'testing',              label: 'Testing',              dot: '#065f46', cls: 's-te' },
+    { key: 'release-prep',         label: 'Release Prep',         dot: '#9d174d', cls: 's-rp' },
+    { key: 'completed',            label: 'Completed',            dot: '#1BB161', cls: 's-done' }
+];
+
+const PRIORITIES = [
+    { key: 'blocker',  label: 'Blocker',  cls: 'p-blocker' },
+    { key: 'critical', label: 'Critical', cls: 'p-critical' },
+    { key: 'high',     label: 'High',     cls: 'p-high' },
+    { key: 'medium',   label: 'Medium',   cls: 'p-medium' },
+    { key: 'low',      label: 'Low',      cls: 'p-low' }
+];
+
+const ASSIGNEES = ['Michelle', 'Kate', 'Pooja', 'Developers', 'Tony'];
+
+// JSONBin config
+const BIN_ID = '69b0d0361687bc351c7c082e';
+const API_KEY = '$2a$10$tAT1CXw1Cpy9mfMc9HyEA.Lbm0vvgnmbeop9OdZTLSSINXy5ZX83C';
+const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+// Data store
+let data = MONTHS.map((m, i) => ({ id: 'month-' + i, name: m, epics: [] }));
+let epicCounter = 0;
+
+// Save indicator
+let saveTimer = null;
+function showSaveStatus(msg, color) {
+    let el = document.getElementById('save-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = color || '#66A9D9';
+    el.style.opacity = '1';
+}
+function hideSaveStatus() {
+    const el = document.getElementById('save-status');
+    if (el) { el.style.opacity = '0'; }
+}
+
+async function saveData() {
+    showSaveStatus('Saving…', '#F59A00');
+    // Compute max epic id to persist counter
+    let maxId = 0;
+    data.forEach(m => m.epics.forEach(e => {
+        const n = parseInt(e.id.replace('epic-', ''));
+        if (!isNaN(n) && n > maxId) maxId = n;
+    }));
+    try {
+        const res = await fetch(BIN_URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': API_KEY
+            },
+            body: JSON.stringify({ months: data, epicCounter: maxId })
+        });
+        if (!res.ok) throw new Error('Save failed');
+        showSaveStatus('Saved ✓', '#1BB161');
+        setTimeout(hideSaveStatus, 2000);
+    } catch (e) {
+        showSaveStatus('Save failed ✗', '#DF252A');
+    }
+}
+
+function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveData, 800);
+}
+
+async function loadData() {
+    showSaveStatus('Loading…', '#66A9D9');
+    try {
+        const res = await fetch(BIN_URL + '/latest', {
+            headers: { 'X-Master-Key': API_KEY }
+        });
+        if (!res.ok) throw new Error('Load failed');
+        const json = await res.json();
+        const saved = json.record;
+        if (saved && saved.months && saved.months.length) {
+            data = saved.months;
+            epicCounter = saved.epicCounter || 0;
+        }
+        hideSaveStatus();
+    } catch (e) {
+        showSaveStatus('Could not load data', '#DF252A');
+    }
+    applyFilters();
+}
+
+function newEpic() {
+    epicCounter++;
+    return {
+        id: 'epic-' + epicCounter,
+        title: '',
+        status: 'r&d',
+        priority: 'medium',
+        description: '',
+        statusData: Object.fromEntries(STATUSES.map(s => [s.key, { targetDate: '', assignees: [] }])),
+        links: [],
+        notes: []
+    };
+}
+
+// ---- VIEW STATE ----
+let currentView = 'epic';
+let searchQuery = '';
+let filterStatus = '';
+let filterAssignee = '';
+let sortBy = '';
+
+function setView(v) {
+    currentView = v;
+    document.getElementById('btn-month-view').classList.toggle('active', v === 'month');
+    document.getElementById('btn-epic-view').classList.toggle('active', v === 'epic');
+    document.getElementById('months-container').style.display = v === 'month' ? '' : 'none';
+    document.getElementById('epic-container').style.display = v === 'epic' ? '' : 'none';
+    applyFilters();
+}
+
+function applyFilters() {
+    searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+    filterStatus = document.getElementById('filter-status').value;
+    filterAssignee = document.getElementById('filter-assignee').value;
+    sortBy = document.getElementById('sort-by').value;
+
+    const banner = document.getElementById('search-banner');
+    const hasFilter = searchQuery || filterStatus || filterAssignee;
+    if (hasFilter) {
+        const total = countMatchingEpics();
+        banner.style.display = 'flex';
+        banner.innerHTML = `<span>Showing <strong>${total}</strong> epic${total !== 1 ? 's' : ''} matching your filters</span>
+            <button class="search-clear" onclick="clearFilters()">✕ Clear filters</button>`;
+    } else {
+        banner.style.display = 'none';
+    }
+
+    if (currentView === 'month') renderMonthView();
+    else renderEpicView();
+}
+
+function clearFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('filter-status').value = '';
+    document.getElementById('filter-assignee').value = '';
+    document.getElementById('sort-by').value = '';
+    searchQuery = ''; filterStatus = ''; filterAssignee = ''; sortBy = '';
+    applyFilters();
+}
+
+function epicMatchesFilters(epic) {
+    if (searchQuery && !epic.title.toLowerCase().includes(searchQuery) &&
+        !(epic.description || '').toLowerCase().includes(searchQuery)) return false;
+    if (filterStatus && epic.status !== filterStatus) return false;
+    if (filterAssignee) {
+        const allAssignees = Object.values(epic.statusData).flatMap(sd => sd.assignees);
+        if (!allAssignees.includes(filterAssignee)) return false;
+    }
+    return true;
+}
+
+function countMatchingEpics() {
+    let count = 0;
+    data.forEach(m => m.epics.forEach(e => { if (epicMatchesFilters(e)) count++; }));
+    return count;
+}
+
+function sortEpics(epics) {
+    if (!sortBy) return epics;
+    const statusOrder = STATUSES.map(s => s.key);
+    const priorityOrder = ['blocker','critical','high','medium','low'];
+    return [...epics].sort((a, b) => {
+        if (sortBy === 'status') return statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
+        if (sortBy === 'priority') return priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority);
+        if (sortBy === 'assignee') {
+            const aA = Object.values(a.statusData).flatMap(sd => sd.assignees).join(',');
+            const bA = Object.values(b.statusData).flatMap(sd => sd.assignees).join(',');
+            return aA.localeCompare(bA);
+        }
+        return 0;
+    });
+}
+
+// ---- RENDER MONTH VIEW ----
+function render() { renderMonthView(); }
+
+function renderMonthView() {
+    const container = document.getElementById('months-container');
+    const openMonths = new Set([...container.querySelectorAll('.month-card.open')].map(el => el.dataset.id));
+    const openEpics = new Set([...container.querySelectorAll('.epic-card.open')].map(el => el.dataset.id));
+
+    container.innerHTML = '';
+    const hasFilter = searchQuery || filterStatus || filterAssignee;
+
+    data.forEach(month => {
+        let epics = month.epics.filter(e => !hasFilter || epicMatchesFilters(e));
+        epics = sortEpics(epics);
+
+        const card = document.createElement('div');
+        // Auto-open month if search has results inside it
+        const shouldOpen = openMonths.has(month.id) || (hasFilter && epics.length > 0);
+        card.className = 'month-card' + (shouldOpen ? ' open' : '');
+        card.dataset.id = month.id;
+
+        const completed = epics.filter(e => e.status === 'completed').length;
+        const active = epics.length - completed;
+
+        card.innerHTML = `
+            <div class="month-header" onclick="toggleMonth('${month.id}')">
+                <div class="month-left">
+                    <div class="month-chevron">
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                            <path d="M2 3.5L5 6.5L8 3.5" stroke="#00346B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="month-name">${month.name}</span>
+                    <span class="month-count">${month.epics.length} epic${month.epics.length !== 1 ? 's' : ''}</span>
+                </div>
+                <div class="month-stats">
+                    <span class="stat-pill stat-done">${completed} completed</span>
+                    <span class="stat-pill stat-active">${active} active</span>
+                    <button class="btn-export" onclick="exportMonth(event,'${month.id}')" title="Export this month as CSV">
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v6M3 5l2.5 2.5L8 5M1 9h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Export CSV
+                    </button>
+                </div>
+            </div>
+            <div class="month-body">
+                ${epics.length === 0 && hasFilter
+                    ? `<div class="no-results" style="padding:1.5rem 0 0.5rem;">No epics match your filters in ${month.name}</div>`
+                    : epics.map(epic => renderEpic(epic, openEpics.has(epic.id))).join('')
+                }
+                ${!hasFilter ? `<button class="btn-add-epic" onclick="addEpic('${month.id}')">
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+                    Add Epic
+                </button>` : ''}
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    document.querySelectorAll('.assignee-multi').forEach(el => {
+        el.addEventListener('click', handleAssigneeClick);
+    });
+    document.querySelectorAll('.field-select, .field-input, .row-input').forEach(el => {
+        el.addEventListener('change', handleFieldChange);
+    });
+}
+
+// ---- RENDER EPIC VIEW ----
+function renderEpicView() {
+    const container = document.getElementById('epic-container');
+    container.innerHTML = '';
+    const hasFilter = searchQuery || filterStatus || filterAssignee;
+
+    // Collect all epics with their month label
+    let allEpics = [];
+    data.forEach(month => {
+        month.epics.forEach(epic => {
+            if (!hasFilter || epicMatchesFilters(epic)) {
+                allEpics.push({ epic, monthName: month.name, monthId: month.id });
+            }
+        });
+    });
+
+    allEpics = sortBy ? allEpics.sort((a, b) => {
+        const statusOrder = STATUSES.map(s => s.key);
+        const priorityOrder = ['blocker','critical','high','medium','low'];
+        if (sortBy === 'status') return statusOrder.indexOf(a.epic.status) - statusOrder.indexOf(b.epic.status);
+        if (sortBy === 'priority') return priorityOrder.indexOf(a.epic.priority) - priorityOrder.indexOf(b.epic.priority);
+        if (sortBy === 'assignee') {
+            const aA = Object.values(a.epic.statusData).flatMap(sd => sd.assignees).join(',');
+            const bA = Object.values(b.epic.statusData).flatMap(sd => sd.assignees).join(',');
+            return aA.localeCompare(bA);
+        }
+        return 0;
+    }) : allEpics;
+
+    if (allEpics.length === 0) {
+        container.innerHTML = `<div class="no-results">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="#B3B3B2" stroke-width="2"/><path d="M14 20h12M20 14v12" stroke="#B3B3B2" stroke-width="2" stroke-linecap="round"/></svg>
+            <div>No epics found</div>
+        </div>`;
+        return;
+    }
+
+    // Build groups
+    let groups = [];
+    if (sortBy === 'status') {
+        STATUSES.forEach(s => {
+            const items = allEpics.filter(item => item.epic.status === s.key);
+            if (items.length === 0) return;
+            groups.push({ label: s.label, dot: s.dot, items, showMonth: true });
+        });
+    } else {
+        const byMonth = {};
+        const monthOrder = [];
+        allEpics.forEach(item => {
+            if (!byMonth[item.monthId]) { byMonth[item.monthId] = { name: item.monthName, items: [] }; monthOrder.push(item.monthId); }
+            byMonth[item.monthId].items.push(item);
+        });
+        monthOrder.forEach(mid => {
+            const g = byMonth[mid];
+            groups.push({ label: g.name, dot: null, items: g.items, showMonth: false });
+        });
+    }
+
+    groups.forEach(group => {
+        const groupEl = document.createElement('div');
+        groupEl.className = 'epic-view-group';
+
+        // Header
+        const headerEl = document.createElement('div');
+        headerEl.className = 'epic-view-group-header';
+        headerEl.innerHTML = group.dot
+            ? `<span style="background:${group.dot};width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;"></span>${group.label} <span style="color:var(--text-light);font-weight:400;">(${group.items.length})</span>`
+            : `${group.label} <span style="color:var(--text-light);font-weight:400;">(${group.items.length})</span>`;
+        groupEl.appendChild(headerEl);
+
+        // Epics — use a temp div to parse HTML then move nodes into DOM
+        group.items.forEach(item => {
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+
+            // Month tag shown when grouped by status
+            if (group.showMonth) {
+                const tag = document.createElement('span');
+                tag.className = 'epic-view-month-tag';
+                tag.style.cssText = 'position:absolute;top:0.9rem;right:3.5rem;z-index:2;';
+                tag.textContent = item.monthName;
+                wrapper.appendChild(tag);
+            }
+
+            // Parse epic HTML into real DOM nodes
+            const tmp = document.createElement('div');
+            tmp.innerHTML = renderEpic(item.epic, false);
+            while (tmp.firstChild) wrapper.appendChild(tmp.firstChild);
+
+            groupEl.appendChild(wrapper);
+        });
+
+        container.appendChild(groupEl);
+    });
+
+    // Re-attach all listeners
+    container.querySelectorAll('.assignee-multi').forEach(el => {
+        el.addEventListener('click', handleAssigneeClick);
+    });
+    container.querySelectorAll('.field-select, .field-input, .row-input').forEach(el => {
+        el.addEventListener('change', handleFieldChange);
+    });
+}
+
+// ---- EXPORT ----
+function exportMonth(event, monthId) {
+    event.stopPropagation();
+    const month = data.find(m => m.id === monthId);
+    if (!month) return;
+    const rows = [['Epic', 'Status', 'Priority', 'Description', 'Assignees (all)', ...STATUSES.map(s => s.label + ' - Target Date'), 'Links', 'Notes']];
+    month.epics.forEach(epic => {
+        const allAssignees = [...new Set(Object.values(epic.statusData).flatMap(sd => sd.assignees))].join('; ');
+        const targetDates = STATUSES.map(s => epic.statusData[s.key]?.targetDate || '');
+        const links = (epic.links || []).map(l => l.label ? `${l.label}: ${l.url}` : l.url).join('; ');
+        const notes = (epic.notes || []).map(n => `[${n.author} - ${n.date}]: ${n.text}`).join(' | ');
+        rows.push([epic.title, epic.status, epic.priority, epic.description || '', allAssignees, ...targetDates, links, notes]);
+    });
+    const csv = rows.map(r => r.map(cell => `"${(cell||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${month.name}-epics.csv`; a.click();
+    URL.revokeObjectURL(url);
+}
+
+
+function renderEpic(epic, isOpen) {
+    const statusObj = STATUSES.find(s => s.key === epic.status) || STATUSES[0];
+    const priorityObj = PRIORITIES.find(p => p.key === epic.priority) || PRIORITIES[3];
+
+    return `
+        <div class="epic-card${isOpen ? ' open' : ''}" data-id="${epic.id}">
+            <div class="epic-header" onclick="toggleEpic(event, '${epic.id}')">
+                <div class="epic-left">
+                    <svg class="epic-chevron" viewBox="0 0 18 18" fill="none">
+                        <path d="M6 4l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <input class="epic-title-input-inline" 
+                        placeholder="Epic name…" 
+                        value="${escHtml(epic.title)}"
+                        data-epic="${epic.id}" data-field="title"
+                        onclick="event.stopPropagation()"
+                        onchange="updateEpicField('${epic.id}', 'title', this.value)"
+                        onblur="updateEpicField('${epic.id}', 'title', this.value)">
+                </div>
+                <div class="epic-right">
+                    <span class="status-badge ${statusObj.cls}">${statusObj.label}</span>
+                    <span class="priority-badge ${priorityObj.cls}">${priorityObj.label}</span>
+                    <button class="btn-delete-epic" onclick="deleteEpic(event, '${epic.id}')" title="Delete epic">✕</button>
+                </div>
+            </div>
+            <div class="epic-body">
+                <div class="top-row">
+                    <div class="field-group">
+                        <span class="field-label">Current Status</span>
+                        <select class="field-select" data-epic="${epic.id}" data-field="status" onchange="updateEpicField('${epic.id}', 'status', this.value)">
+                            ${STATUSES.map(s => `<option value="${s.key}" ${epic.status === s.key ? 'selected' : ''}>${s.label}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <span class="field-label">Priority</span>
+                        <select class="field-select" data-epic="${epic.id}" data-field="priority" onchange="updateEpicField('${epic.id}', 'priority', this.value)">
+                            ${PRIORITIES.map(p => `<option value="${p.key}" ${epic.priority === p.key ? 'selected' : ''}>${p.label}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <span class="field-label">Description</span>
+                        <textarea class="field-input" placeholder="Describe this epic…" data-epic="${epic.id}" data-field="description" onchange="updateEpicField('${epic.id}', 'description', this.value)" onblur="updateEpicField('${epic.id}', 'description', this.value)">${escHtml(epic.description)}</textarea>
+                    </div>
+                </div>
+
+                <div class="section-label">Links</div>
+                <div class="links-list" id="links-${epic.id}">
+                    ${(epic.links || []).map((lnk, i) => `
+                        <div class="link-row" data-link-idx="${i}">
+                            <input class="link-label-input" type="text" placeholder="Label (optional)" value="${escHtml(lnk.label)}"
+                                onblur="updateLink('${epic.id}', ${i}, 'label', this.value)"
+                                onchange="updateLink('${epic.id}', ${i}, 'label', this.value)"
+                                onclick="event.stopPropagation()">
+                            <input class="link-url-input" type="url" placeholder="https://…" value="${escHtml(lnk.url)}"
+                                onblur="updateLink('${epic.id}', ${i}, 'url', this.value)"
+                                onchange="updateLink('${epic.id}', ${i}, 'url', this.value)"
+                                onclick="event.stopPropagation()">
+                            <a class="link-open-btn ${lnk.url ? '' : 'disabled'}" href="${escHtml(lnk.url)}" target="_blank" rel="noopener" title="Open link"
+                                onclick="event.stopPropagation()">
+                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5.5 2.5H2a1 1 0 00-1 1v8.5a1 1 0 001 1h8.5a1 1 0 001-1V8.5M8.5 1.5H12m0 0v3.5M12 1.5L6 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </a>
+                            <button class="btn-delete-link" onclick="deleteLink(event,'${epic.id}',${i})" title="Remove link">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn-add-link" onclick="addLink(event,'${epic.id}')">
+                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 1v9M1 5.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                    Add Link
+                </button>
+
+                <div class="section-label">Notes</div>
+                <div class="notes-compose">
+                    <div class="notes-compose-row">
+                        <input class="notes-author-input" type="text" placeholder="Your name…" id="note-author-${epic.id}" onclick="event.stopPropagation()">
+                        <textarea class="notes-text-input" placeholder="Write a note…" id="note-text-${epic.id}" onclick="event.stopPropagation()"></textarea>
+                        <button class="btn-add-note" onclick="addNote(event,'${epic.id}')">Post Note</button>
+                    </div>
+                </div>
+                <div class="notes-feed" id="notes-feed-${epic.id}">
+                    ${(epic.notes || []).map((n, i) => `
+                        <div class="note-item">
+                            <div class="note-meta">
+                                <span class="note-author">${escHtml(n.author || 'Anonymous')}</span>
+                                <span class="note-date">${escHtml(n.date)}</span>
+                            </div>
+                            <div class="note-text">${escHtml(n.text)}</div>
+                            <button class="btn-delete-note" onclick="deleteNote(event,'${epic.id}',${i})" title="Delete note">✕</button>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="section-label">Status Timeline — Target Dates & Assignees</div>
+                <div class="status-table">
+                    <div class="status-table-header">
+                        <span>Status</span>
+                        <span>Target Date</span>
+                        <span>Assignees</span>
+                    </div>
+                    ${STATUSES.map(s => {
+                        const sd = epic.statusData[s.key];
+                        return `
+                        <div class="status-row">
+                            <div class="status-name-cell">
+                                <span class="status-dot" style="background:${s.dot}"></span>
+                                ${s.label}
+                            </div>
+                            <input type="date" class="row-input" value="${sd.targetDate || ''}"
+                                onchange="updateStatusField('${epic.id}', '${s.key}', 'targetDate', this.value)">
+                            <div class="assignee-multi" data-epic="${epic.id}" data-status="${s.key}">
+                                ${sd.assignees.map(a => `
+                                    <span class="assignee-chip">
+                                        ${a}
+                                        <button class="assignee-chip-remove" onclick="removeAssignee(event,'${epic.id}','${s.key}','${a}')">×</button>
+                                    </span>
+                                `).join('')}
+                                ${sd.assignees.length === 0 ? '<span class="assignee-placeholder">Select…</span>' : ''}
+                                <div class="assignee-dropdown" id="dd-${epic.id}-${s.key.replace(/[&]/g,'_')}">
+                                    ${ASSIGNEES.map(a => `
+                                        <div class="assignee-option${sd.assignees.includes(a) ? ' selected' : ''}"
+                                            onclick="toggleAssignee(event,'${epic.id}','${s.key}','${a}')">
+                                            <span class="check">${sd.assignees.includes(a) ? '✓' : ''}</span>
+                                            ${a}
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- INTERACTIONS ----
+function toggleMonth(id) {
+    const card = document.querySelector(`.month-card[data-id="${id}"]`);
+    if (card) card.classList.toggle('open');
+}
+
+function toggleEpic(event, id) {
+    if (['INPUT','SELECT','TEXTAREA','BUTTON'].includes(event.target.tagName)) return;
+    if (event.target.closest('.assignee-multi') || event.target.closest('.assignee-dropdown')) return;
+    event.stopPropagation();
+    // Walk up from the clicked element to find the epic-card
+    const card = event.target.closest('.epic-card');
+    if (card) card.classList.toggle('open');
+}
+
+function addEpic(monthId) {
+    const month = data.find(m => m.id === monthId);
+    month.epics.push(newEpic());
+    const monthCard = document.querySelector(`.month-card[data-id="${monthId}"]`);
+    if (monthCard) monthCard.classList.add('open');
+    applyFilters();
+    const newEpicId = month.epics[month.epics.length - 1].id;
+    const epicCard = document.querySelector(`.epic-card[data-id="${newEpicId}"]`);
+    if (epicCard) epicCard.classList.add('open');
+    scheduleSave();
+}
+
+function deleteEpic(event, epicId) {
+    event.stopPropagation();
+    if (!confirm('Delete this epic?')) return;
+    data.forEach(m => { m.epics = m.epics.filter(e => e.id !== epicId); });
+    applyFilters();
+    scheduleSave();
+}
+
+function findEpic(epicId) {
+    for (const m of data) {
+        const e = m.epics.find(ep => ep.id === epicId);
+        if (e) return e;
+    }
+    return null;
+}
+
+function updateEpicField(epicId, field, value) {
+    const epic = findEpic(epicId);
+    if (epic) { epic[field] = value; renderEpicHeader(epicId); scheduleSave(); }
+}
+
+function renderEpicHeader(epicId) {
+    const epic = findEpic(epicId);
+    if (!epic) return;
+    // Update ALL instances of this epic card (may exist in both month view and epic view)
+    document.querySelectorAll(`.epic-card[data-id="${epicId}"]`).forEach(card => {
+        const statusObj = STATUSES.find(s => s.key === epic.status) || STATUSES[0];
+        const priorityObj = PRIORITIES.find(p => p.key === epic.priority) || PRIORITIES[3];
+        const sb = card.querySelector('.status-badge');
+        const pb = card.querySelector('.priority-badge');
+        if (sb) { sb.className = 'status-badge ' + statusObj.cls; sb.textContent = statusObj.label; }
+        if (pb) { pb.className = 'priority-badge ' + priorityObj.cls; pb.textContent = priorityObj.label; }
+    });
+    updateMonthStats();
+}
+
+function updateMonthStats() {
+    data.forEach(month => {
+        const card = document.querySelector(`.month-card[data-id="${month.id}"]`);
+        if (!card) return;
+        const completed = month.epics.filter(e => e.status === 'completed').length;
+        const active = month.epics.length - completed;
+        const countEl = card.querySelector('.month-count');
+        const doneEl = card.querySelector('.stat-done');
+        const activeEl = card.querySelector('.stat-active');
+        if (countEl) countEl.textContent = month.epics.length + ' epic' + (month.epics.length !== 1 ? 's' : '');
+        if (doneEl) doneEl.textContent = completed + ' completed';
+        if (activeEl) activeEl.textContent = active + ' active';
+    });
+}
+
+function updateStatusField(epicId, statusKey, field, value) {
+    const epic = findEpic(epicId);
+    if (epic && epic.statusData[statusKey]) {
+        epic.statusData[statusKey][field] = value;
+        scheduleSave();
+    }
+}
+
+function handleAssigneeClick(event) {
+    const multi = event.currentTarget;
+    // Don't open if clicking a chip remove button
+    if (event.target.classList.contains('assignee-chip-remove')) return;
+    if (event.target.closest('.assignee-dropdown')) return;
+    const epicId = multi.dataset.epic;
+    const statusKey = multi.dataset.status;
+    const ddId = `dd-${epicId}-${statusKey.replace(/[&]/g, '_')}`;
+    const dd = document.getElementById(ddId);
+    if (!dd) return;
+    // Close all other dropdowns
+    document.querySelectorAll('.assignee-dropdown.open').forEach(d => { if (d !== dd) d.classList.remove('open'); });
+    dd.classList.toggle('open');
+    event.stopPropagation();
+}
+
+function toggleAssignee(event, epicId, statusKey, assignee) {
+    event.stopPropagation();
+    const epic = findEpic(epicId);
+    if (!epic) return;
+    const sd = epic.statusData[statusKey];
+    const idx = sd.assignees.indexOf(assignee);
+    if (idx === -1) sd.assignees.push(assignee);
+    else sd.assignees.splice(idx, 1);
+    scheduleSave();
+    // Re-render just the assignee cell
+    const multi = document.querySelector(`.assignee-multi[data-epic="${epicId}"][data-status="${statusKey}"]`);
+    if (multi) {
+        const ddId = `dd-${epicId}-${statusKey.replace(/[&]/g, '_')}`;
+        multi.innerHTML = `
+            ${sd.assignees.map(a => `
+                <span class="assignee-chip">
+                    ${a}
+                    <button class="assignee-chip-remove" onclick="removeAssignee(event,'${epicId}','${statusKey}','${a}')">×</button>
+                </span>
+            `).join('')}
+            ${sd.assignees.length === 0 ? '<span class="assignee-placeholder">Select…</span>' : ''}
+            <div class="assignee-dropdown open" id="${ddId}">
+                ${ASSIGNEES.map(a => `
+                    <div class="assignee-option${sd.assignees.includes(a) ? ' selected' : ''}"
+                        onclick="toggleAssignee(event,'${epicId}','${statusKey}','${a}')">
+                        <span class="check">${sd.assignees.includes(a) ? '✓' : ''}</span>
+                        ${a}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        multi.addEventListener('click', handleAssigneeClick);
+    }
+}
+
+function removeAssignee(event, epicId, statusKey, assignee) {
+    event.stopPropagation();
+    const epic = findEpic(epicId);
+    if (!epic) return;
+    const sd = epic.statusData[statusKey];
+    sd.assignees = sd.assignees.filter(a => a !== assignee);
+    scheduleSave();
+    const multi = document.querySelector(`.assignee-multi[data-epic="${epicId}"][data-status="${statusKey}"]`);
+    if (multi) {
+        const ddId = `dd-${epicId}-${statusKey.replace(/[&]/g, '_')}`;
+        multi.innerHTML = `
+            ${sd.assignees.map(a => `
+                <span class="assignee-chip">
+                    ${a}
+                    <button class="assignee-chip-remove" onclick="removeAssignee(event,'${epicId}','${statusKey}','${a}')">×</button>
+                </span>
+            `).join('')}
+            ${sd.assignees.length === 0 ? '<span class="assignee-placeholder">Select…</span>' : ''}
+            <div class="assignee-dropdown" id="${ddId}">
+                ${ASSIGNEES.map(a => `
+                    <div class="assignee-option${sd.assignees.includes(a) ? ' selected' : ''}"
+                        onclick="toggleAssignee(event,'${epicId}','${statusKey}','${a}')">
+                        <span class="check">${sd.assignees.includes(a) ? '✓' : ''}</span>
+                        ${a}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        multi.addEventListener('click', handleAssigneeClick);
+    }
+}
+
+function handleFieldChange(e) {
+    const el = e.target;
+    const epicId = el.dataset.epic;
+    const field = el.dataset.field;
+    if (epicId && field) updateEpicField(epicId, field, el.value);
+}
+
+function addLink(event, epicId) {
+    event.stopPropagation();
+    const epic = findEpic(epicId);
+    if (!epic) return;
+    epic.links.push({ label: '', url: '' });
+    refreshLinks(epicId);
+    scheduleSave();
+}
+
+function deleteLink(event, epicId, idx) {
+    event.stopPropagation();
+    const epic = findEpic(epicId);
+    if (!epic) return;
+    epic.links.splice(idx, 1);
+    refreshLinks(epicId);
+    scheduleSave();
+}
+
+function updateLink(epicId, idx, field, value) {
+    const epic = findEpic(epicId);
+    if (!epic || !epic.links[idx]) return;
+    epic.links[idx][field] = value;
+    scheduleSave();
+    if (field === 'url') {
+        const card = document.querySelector(`.epic-card[data-id="${epicId}"]`);
+        if (!card) return;
+        const rows = card.querySelectorAll('.link-row');
+        const row = rows[idx];
+        if (!row) return;
+        const btn = row.querySelector('.link-open-btn');
+        if (btn) { btn.href = value; btn.classList.toggle('disabled', !value); }
+    }
+}
+
+function refreshLinks(epicId) {
+    const epic = findEpic(epicId);
+    if (!epic) return;
+    const list = document.getElementById(`links-${epicId}`);
+    if (!list) return;
+    list.innerHTML = (epic.links || []).map((lnk, i) => `
+        <div class="link-row" data-link-idx="${i}">
+            <input class="link-label-input" type="text" placeholder="Label (optional)" value="${escHtml(lnk.label)}"
+                onblur="updateLink('${epicId}', ${i}, 'label', this.value)"
+                onchange="updateLink('${epicId}', ${i}, 'label', this.value)"
+                onclick="event.stopPropagation()">
+            <input class="link-url-input" type="url" placeholder="https://…" value="${escHtml(lnk.url)}"
+                onblur="updateLink('${epicId}', ${i}, 'url', this.value)"
+                onchange="updateLink('${epicId}', ${i}, 'url', this.value)"
+                onclick="event.stopPropagation()">
+            <a class="link-open-btn ${lnk.url ? '' : 'disabled'}" href="${escHtml(lnk.url)}" target="_blank" rel="noopener" title="Open link" onclick="event.stopPropagation()">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5.5 2.5H2a1 1 0 00-1 1v8.5a1 1 0 001 1h8.5a1 1 0 001-1V8.5M8.5 1.5H12m0 0v3.5M12 1.5L6 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+            <button class="btn-delete-link" onclick="deleteLink(event,'${epicId}',${i})" title="Remove link">✕</button>
+        </div>
+    `).join('');
+}
+
+function addNote(event, epicId) {
+    event.stopPropagation();
+    const epic = findEpic(epicId);
+    if (!epic) return;
+    const authorEl = document.getElementById(`note-author-${epicId}`);
+    const textEl = document.getElementById(`note-text-${epicId}`);
+    const text = textEl ? textEl.value.trim() : '';
+    if (!text) { if (textEl) textEl.focus(); return; }
+    const author = (authorEl ? authorEl.value.trim() : '') || 'Anonymous';
+    const now = new Date();
+    const date = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) +
+        ' ' + now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    epic.notes.unshift({ author, text, date });
+    if (textEl) textEl.value = '';
+    refreshNotes(epicId);
+    scheduleSave();
+}
+
+function deleteNote(event, epicId, idx) {
+    event.stopPropagation();
+    const epic = findEpic(epicId);
+    if (!epic) return;
+    epic.notes.splice(idx, 1);
+    refreshNotes(epicId);
+    scheduleSave();
+}
+
+function refreshNotes(epicId) {
+    const epic = findEpic(epicId);
+    if (!epic) return;
+    const feed = document.getElementById(`notes-feed-${epicId}`);
+    if (!feed) return;
+    feed.innerHTML = (epic.notes || []).map((n, i) => `
+        <div class="note-item">
+            <div class="note-meta">
+                <span class="note-author">${escHtml(n.author || 'Anonymous')}</span>
+                <span class="note-date">${escHtml(n.date)}</span>
+            </div>
+            <div class="note-text">${escHtml(n.text)}</div>
+            <button class="btn-delete-note" onclick="deleteNote(event,'${epicId}',${i})" title="Delete note">✕</button>
+        </div>
+    `).join('');
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click', () => {
+    document.querySelectorAll('.assignee-dropdown.open').forEach(d => d.classList.remove('open'));
+});
+
+loadData();
+</script>
+</body>
+</html>
