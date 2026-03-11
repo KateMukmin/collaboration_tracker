@@ -781,10 +781,8 @@ const PRIORITIES = [
 
 const ASSIGNEES = ['Michelle', 'Kate', 'Pooja', 'Developers', 'Tony'];
 
-// JSONBin config
-const BIN_ID = '69b0d0361687bc351c7c082e';
-const API_KEY = '$2a$10$tAT1CXw1Cpy9mfMc9HyEA.Lbm0vvgnmbeop9OdZTLSSINXy5ZX83C';
-const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+// API config — Vercel backend
+const API_URL = '/api/data';
 
 // Data store
 let data = MONTHS.map((m, i) => ({ id: 'month-' + i, name: m, epics: [] }));
@@ -806,26 +804,27 @@ function hideSaveStatus() {
 
 async function saveData() {
     showSaveStatus('Saving…', '#F59A00');
-    // Compute max epic id to persist counter
     let maxId = 0;
     data.forEach(m => m.epics.forEach(e => {
         const n = parseInt(e.id.replace('epic-', ''));
         if (!isNaN(n) && n > maxId) maxId = n;
     }));
     try {
-        const res = await fetch(BIN_URL, {
+        const res = await fetch(API_URL, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': API_KEY
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ months: data, epicCounter: maxId })
         });
-        if (!res.ok) throw new Error('Save failed');
+        if (!res.ok) {
+            const errText = await res.text();
+            console.error('Save error:', res.status, errText);
+            throw new Error('Save failed: ' + res.status);
+        }
         showSaveStatus('Saved ✓', '#1BB161');
         setTimeout(hideSaveStatus, 2000);
     } catch (e) {
-        showSaveStatus('Save failed ✗', '#DF252A');
+        console.error('Save exception:', e);
+        showSaveStatus('Save failed ✗ — check console', '#DF252A');
     }
 }
 
@@ -837,19 +836,21 @@ function scheduleSave() {
 async function loadData() {
     showSaveStatus('Loading…', '#66A9D9');
     try {
-        const res = await fetch(BIN_URL + '/latest', {
-            headers: { 'X-Master-Key': API_KEY }
-        });
-        if (!res.ok) throw new Error('Load failed');
-        const json = await res.json();
-        const saved = json.record;
+        const res = await fetch(API_URL);
+        if (!res.ok) {
+            const errText = await res.text();
+            console.error('Load error:', res.status, errText);
+            throw new Error('Load failed: ' + res.status);
+        }
+        const saved = await res.json();
         if (saved && saved.months && saved.months.length) {
             data = saved.months;
             epicCounter = saved.epicCounter || 0;
         }
         hideSaveStatus();
     } catch (e) {
-        showSaveStatus('Could not load data', '#DF252A');
+        console.error('Load exception:', e);
+        showSaveStatus('Could not load data ✗ — check console', '#DF252A');
     }
     applyFilters();
 }
