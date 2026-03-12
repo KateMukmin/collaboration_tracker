@@ -166,6 +166,16 @@
         }
         .btn-add-epic:hover { background: var(--lighter); transform: translateY(-1px); }
         .btn-add-epic:active { transform: translateY(0); }
+        .epic-view-add-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            background: white;
+            border-radius: 10px;
+            border: 2px dashed var(--border);
+            margin-top: 0.5rem;
+        }
 
         /* EPIC CARD */
         .epic-card {
@@ -770,6 +780,16 @@
 
     <!-- EPIC VIEW -->
     <div id="epic-container"></div>
+
+    <!-- ADD EPIC BAR (epic view only) -->
+    <div id="epic-view-add-bar" class="epic-view-add-bar">
+        <span style="font-size:13px;font-weight:500;color:var(--text-mid);">Add epic to:</span>
+        <select class="toolbar-select" id="epic-view-month-select"></select>
+        <button class="btn-add-epic" onclick="addEpicFromEpicView()">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+            Add Epic
+        </button>
+    </div>
 </div>
 
 <script>
@@ -900,6 +920,7 @@ function setView(v) {
     document.getElementById('btn-epic-view').classList.toggle('active', v === 'epic');
     document.getElementById('months-container').style.display = v === 'month' ? '' : 'none';
     document.getElementById('epic-container').style.display = v === 'epic' ? '' : 'none';
+    document.getElementById('epic-view-add-bar').style.display = v === 'epic' ? 'flex' : 'none';
     applyFilters();
 }
 
@@ -1255,6 +1276,21 @@ function renderEpicView() {
     container.querySelectorAll('.field-select, .field-input, .row-input').forEach(el => {
         el.addEventListener('change', handleFieldChange);
     });
+}
+
+function addEpicFromEpicView() {
+    const select = document.getElementById('epic-view-month-select');
+    if (!select) return;
+    const monthId = select.value;
+    const month = data.find(m => m.id === monthId);
+    if (!month) return;
+    month.epics.push(newEpic());
+    applyFilters();
+    // Auto-open the new epic
+    const newEpicId = month.epics[month.epics.length - 1].id;
+    const epicCard = document.querySelector(`.epic-card[data-id="${newEpicId}"]`);
+    if (epicCard) epicCard.classList.add('open');
+    scheduleSave();
 }
 
 // ---- EXPORT ----
@@ -1735,6 +1771,17 @@ function refreshNotes(epicId) {
 document.addEventListener('click', () => {
     document.querySelectorAll('.assignee-dropdown.open').forEach(d => d.classList.remove('open'));
 });
+
+// Populate month dropdown in epic view add bar
+const monthSel = document.getElementById('epic-view-month-select');
+MONTHS.forEach((m, i) => {
+    const opt = document.createElement('option');
+    opt.value = 'month-' + i;
+    opt.textContent = m;
+    monthSel.appendChild(opt);
+});
+// Default to current month
+monthSel.value = 'month-' + new Date().getMonth();
 
 loadData();
 </script>
