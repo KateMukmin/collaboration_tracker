@@ -679,6 +679,8 @@
             background: var(--subtle); color: var(--main);
             padding: 0.1rem 0.5rem; border-radius: 20px;
             border: 1px solid var(--lighter2);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         /* NO RESULTS */
@@ -1088,14 +1090,15 @@ function renderMonthView() {
             const addBtn = monthBody.querySelector('.btn-add-epic');
             crossEpics.forEach(({ epic, fromMonth }) => {
                 const wrapper = document.createElement('div');
-                wrapper.style.position = 'relative';
-                const tag = document.createElement('span');
-                tag.className = 'epic-view-month-tag';
-                tag.style.cssText = 'position:absolute;top:0.9rem;right:3.5rem;z-index:2;';
-                tag.textContent = 'from ' + fromMonth;
-                wrapper.appendChild(tag);
                 const tmp = document.createElement('div');
                 tmp.innerHTML = renderEpic(epic, openEpics.has(epic.id));
+                const epicRight = tmp.querySelector('.epic-right');
+                if (epicRight) {
+                    const tag = document.createElement('span');
+                    tag.className = 'epic-view-month-tag';
+                    tag.textContent = 'from ' + fromMonth;
+                    epicRight.insertBefore(tag, epicRight.firstChild);
+                }
                 while (tmp.firstChild) wrapper.appendChild(tmp.firstChild);
                 if (addBtn) monthBody.insertBefore(wrapper, addBtn);
                 else monthBody.appendChild(wrapper);
@@ -1231,15 +1234,21 @@ function renderEpicView() {
             const wrapper = document.createElement('div');
             wrapper.style.position = 'relative';
             if (group.showMonth) {
-                const tag = document.createElement('span');
-                tag.className = 'epic-view-month-tag';
-                tag.style.cssText = 'position:absolute;top:0.9rem;right:3.5rem;z-index:2;';
-                tag.textContent = item.monthName;
-                wrapper.appendChild(tag);
+                const tmp = document.createElement('div');
+                tmp.innerHTML = renderEpic(item.epic, false);
+                const epicRight = tmp.querySelector('.epic-right');
+                if (epicRight) {
+                    const tag = document.createElement('span');
+                    tag.className = 'epic-view-month-tag';
+                    tag.textContent = item.monthName;
+                    epicRight.insertBefore(tag, epicRight.firstChild);
+                }
+                while (tmp.firstChild) wrapper.appendChild(tmp.firstChild);
+            } else {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = renderEpic(item.epic, false);
+                while (tmp.firstChild) wrapper.appendChild(tmp.firstChild);
             }
-            const tmp = document.createElement('div');
-            tmp.innerHTML = renderEpic(item.epic, false);
-            while (tmp.firstChild) wrapper.appendChild(tmp.firstChild);
             groupEl.appendChild(wrapper);
         });
 
@@ -1252,14 +1261,15 @@ function renderEpicView() {
 
             group.crossItems.forEach(item => {
                 const wrapper = document.createElement('div');
-                wrapper.style.position = 'relative';
-                const tag = document.createElement('span');
-                tag.className = 'epic-view-month-tag';
-                tag.style.cssText = 'position:absolute;top:0.9rem;right:3.5rem;z-index:2;';
-                tag.textContent = 'from ' + item.monthName;
-                wrapper.appendChild(tag);
                 const tmp = document.createElement('div');
                 tmp.innerHTML = renderEpic(item.epic, false);
+                const epicRight = tmp.querySelector('.epic-right');
+                if (epicRight) {
+                    const tag = document.createElement('span');
+                    tag.className = 'epic-view-month-tag';
+                    tag.textContent = 'from ' + item.monthName;
+                    epicRight.insertBefore(tag, epicRight.firstChild);
+                }
                 while (tmp.firstChild) wrapper.appendChild(tmp.firstChild);
                 groupEl.appendChild(wrapper);
             });
