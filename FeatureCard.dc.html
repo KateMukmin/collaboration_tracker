@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="_ds/field-control-analytics-design-system-019e097b-edca-7c6c-bdb3-b53d35acfedc/tokens/fonts.css" />
+  <link rel="stylesheet" href="_ds/field-control-analytics-design-system-019e097b-edca-7c6c-bdb3-b53d35acfedc/tokens/colors.css" />
+  <link rel="stylesheet" href="_ds/field-control-analytics-design-system-019e097b-edca-7c6c-bdb3-b53d35acfedc/tokens/typography.css" />
+  <link rel="stylesheet" href="_ds/field-control-analytics-design-system-019e097b-edca-7c6c-bdb3-b53d35acfedc/tokens/spacing.css" />
+  <link rel="stylesheet" href="_ds/field-control-analytics-design-system-019e097b-edca-7c6c-bdb3-b53d35acfedc/styles.css" />
+  <script src="_ds/field-control-analytics-design-system-019e097b-edca-7c6c-bdb3-b53d35acfedc/_ds_bundle.js"></script>
+</helmet>
+
+<div style="border-top:1px solid var(--border-subtle);background:{{ rowBg }}">
+  <div onClick="{{ onHeaderClick }}" style="display:grid;grid-template-columns:minmax(220px,1.6fr) 96px 88px minmax(110px,1fr) 140px 116px 36px;gap:12px;align-items:center;padding:10px 16px;min-width:850px;cursor:pointer" style-hover="background:var(--fca-blue-wash)">
+    <div style="display:flex;align-items:center;gap:10px;min-width:0">
+      <span style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:{{ chevBg }};transition:background .15s ease">
+        <svg width="10" height="10" viewBox="0 0 12 12" fill="none" style="transform:{{ chevRotate }};transition:transform .2s ease"><path d="M4.5 2.5L8 6l-3.5 3.5" stroke="{{ chevStroke }}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </span>
+      <input placeholder="Untitled feature" value="{{ title }}" onChange="{{ onTitle }}" onClick="{{ stop }}" style="font-family:var(--font-body);font-size:var(--label-1-size);line-height:var(--label-1-line);font-weight:var(--fw-semibold);color:var(--text-primary);border:none;background:transparent;outline:none;flex:1;min-width:0;padding:0;text-overflow:ellipsis" />
+    </div>
+    <span style="font-family:var(--font-body);font-size:var(--label-2-size);color:var(--text-secondary);white-space:nowrap">{{ createdLabel }}</span>
+    <div style="display:flex">
+      <x-import component-from-global-scope="FieldControlAnalyticsDesignSystem_019e09.Badge" tone="{{ pTone }}" solid="{{ pSolid }}" style="{{ gridBadge }}" hint-size="auto,20px">{{ pLabel }}</x-import>
+    </div>
+    <span style="font-family:var(--font-body);font-size:var(--label-2-size);color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ assigneeText }}">{{ assigneeText }}</span>
+    <div style="display:flex;min-width:0">
+      <x-import component-from-global-scope="FieldControlAnalyticsDesignSystem_019e09.Badge" tone="{{ sTone }}" style="{{ gridBadge }}" hint-size="auto,20px">{{ sLabel }}</x-import>
+    </div>
+    <span style="font-family:var(--font-body);font-size:var(--label-2-size);color:{{ targetColor }};white-space:nowrap">{{ targetLabel }}</span>
+    <button onClick="{{ onDelete }}" title="Delete feature" style="width:28px;height:28px;flex-shrink:0;background:none;border:none;border-radius:50%;cursor:pointer;color:var(--text-muted);display:flex;align-items:center;justify-content:center" style-hover="color:var(--fca-error);background:var(--fca-error-soft)">
+      <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+    </button>
+  </div>
+
+  <sc-if value="{{ isOpen }}">
+    <div style="padding:4px 20px 28px;background:var(--fca-blue-wash)">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:16px;margin-top:20px">
+        <x-import component-from-global-scope="FieldControlAnalyticsDesignSystem_019e09.Select" label="Current status" options="{{ statusOptions }}" value="{{ status }}" onChange="{{ onStatus }}" hint-size="100%,74px"></x-import>
+        <x-import component-from-global-scope="FieldControlAnalyticsDesignSystem_019e09.Select" label="Priority" options="{{ priorityOptions }}" value="{{ priority }}" onChange="{{ onPriority }}" hint-size="100%,74px"></x-import>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-family:var(--font-body);font-size:var(--label-1-size);font-weight:var(--fw-medium);color:var(--text-primary)">Description</span>
+          <textarea placeholder="Describe this feature" value="{{ description }}" onChange="{{ onDescription }}" onClick="{{ stop }}" style="font-family:var(--font-body);font-size:var(--label-1-size);line-height:var(--label-1-line);color:var(--text-primary);background:var(--surface-card);border:none;box-shadow:inset 0 0 0 1px var(--border-input);border-radius:var(--radius-sm);padding:12px 16px;outline:none;width:100%;resize:vertical;min-height:48px" style-focus="box-shadow:inset 0 0 0 1px var(--fca-blue)"></textarea>
+        </div>
+      </div>
+
+      <div style="font-family:var(--font-body);font-size:var(--chip-size);line-height:var(--chip-line);font-weight:var(--fw-medium);letter-spacing:0.04em;text-transform:uppercase;color:var(--text-secondary);margin:24px 0 8px">Links</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <sc-for list="{{ links }}" as="lnk" hint-placeholder-count="0">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="text" placeholder="Label" value="{{ lnk.label }}" onChange="{{ lnk.onLabel }}" onClick="{{ stop }}" style="font-family:var(--font-body);font-size:var(--label-1-size);color:var(--text-primary);background:var(--surface-card);border:none;box-shadow:inset 0 0 0 1px var(--border-input);border-radius:var(--radius-sm);padding:9px 14px;outline:none;width:160px;flex-shrink:0" style-focus="box-shadow:inset 0 0 0 1px var(--fca-blue)" />
+            <input type="url" placeholder="https://" value="{{ lnk.url }}" onChange="{{ lnk.onUrl }}" onClick="{{ stop }}" style="font-family:var(--font-body);font-size:var(--label-1-size);color:var(--text-link);background:var(--surface-card);border:none;box-shadow:inset 0 0 0 1px var(--border-input);border-radius:var(--radius-sm);padding:9px 14px;outline:none;flex:1" style-focus="box-shadow:inset 0 0 0 1px var(--fca-blue)" />
+            <a href="{{ lnk.href }}" target="_blank" rel="noopener" title="Open link" onClick="{{ stop }}" style="width:32px;height:32px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--fca-navy);text-decoration:none;opacity:{{ lnk.opacity }};pointer-events:{{ lnk.pe }}" style-hover="background:var(--fca-blue-subtle)">
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M5.5 2.5H2a1 1 0 00-1 1v8.5a1 1 0 001 1h8.5a1 1 0 001-1V8.5M8.5 1.5H12m0 0v3.5M12 1.5L6 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </a>
+            <button onClick="{{ lnk.onDelete }}" title="Remove link" style="width:32px;height:32px;flex-shrink:0;background:none;border:none;border-radius:50%;cursor:pointer;color:var(--text-muted);display:flex;align-items:center;justify-content:center" style-hover="color:var(--fca-error);background:var(--fca-error-soft)">
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+            </button>
+          </div>
+        </sc-for>
+        <div style="display:flex">
+          <x-import component-from-global-scope="FieldControlAnalyticsDesignSystem_019e09.Button" variant="ghost" size="sm" onClick="{{ onAddLink }}" hint-size="auto,36px">Add link</x-import>
+        </div>
+      </div>
+
+      <div style="font-family:var(--font-body);font-size:var(--chip-size);line-height:var(--chip-line);font-weight:var(--fw-medium);letter-spacing:0.04em;text-transform:uppercase;color:var(--text-secondary);margin:24px 0 8px">Notes</div>
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <input type="text" placeholder="Your name" value="{{ noteAuthor }}" onChange="{{ onNoteAuthor }}" onClick="{{ stop }}" style="font-family:var(--font-body);font-size:var(--label-1-size);color:var(--text-primary);background:var(--surface-card);border:none;box-shadow:inset 0 0 0 1px var(--border-input);border-radius:var(--radius-sm);padding:10px 14px;outline:none;width:160px;flex-shrink:0" style-focus="box-shadow:inset 0 0 0 1px var(--fca-blue)" />
+        <textarea placeholder="Write a note" value="{{ noteText }}" onChange="{{ onNoteText }}" onClick="{{ stop }}" style="font-family:var(--font-body);font-size:var(--label-1-size);line-height:var(--label-1-line);color:var(--text-primary);background:var(--surface-card);border:none;box-shadow:inset 0 0 0 1px var(--border-input);border-radius:var(--radius-sm);padding:10px 14px;outline:none;flex:1;resize:vertical;min-height:44px" style-focus="box-shadow:inset 0 0 0 1px var(--fca-blue)"></textarea>
+        <x-import component-from-global-scope="FieldControlAnalyticsDesignSystem_019e09.Button" variant="primary" size="sm" onClick="{{ onPostNote }}" hint-size="auto,36px">Post note</x-import>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+        <sc-for list="{{ notes }}" as="n" hint-placeholder-count="0">
+          <div style="background:var(--surface-card);border-radius:var(--radius-sm);box-shadow:var(--shadow-row);padding:12px 14px;position:relative">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <x-import component-from-global-scope="FieldControlAnalyticsDesignSystem_019e09.Avatar" name="{{ n.author }}" size="xs" hint-size="24px,24px"></x-import>
+              <span style="font-family:var(--font-body);font-size:var(--label-2-size);font-weight:var(--fw-semibold);color:var(--text-primary)">{{ n.author }}</span>
+              <span style="font-family:var(--font-body);font-size:var(--label-2-size);color:var(--text-muted)">{{ n.date }}</span>
+            </div>
+            <div style="font-family:var(--font-body);font-size:var(--label-1-size);line-height:var(--label-1-line);color:var(--text-primary);white-space:pre-wrap;word-break:break-word;padding-right:28px">{{ n.text }}</div>
+            <button onClick="{{ n.onDelete }}" title="Delete note" style="position:absolute;top:8px;right:8px;width:26px;height:26px;background:none;border:none;border-radius:50%;cursor:pointer;color:var(--text-muted);display:flex;align-items:center;justify-content:center" style-hover="color:var(--fca-error);background:var(--fca-error-soft)">
+              <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+            </button>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="font-family:var(--font-body);font-size:var(--chip-size);line-height:var(--chip-line);font-weight:var(--fw-medium);letter-spacing:0.04em;text-transform:uppercase;color:var(--text-secondary);margin:24px 0 8px">Status timeline</div>
+      <div style="border-radius:var(--radius-md);overflow:hidden;background:var(--surface-card);box-shadow:var(--shadow-row)">
+        <div style="display:grid;grid-template-columns:220px 1fr 1.3fr;background:var(--surface-brand);padding:10px 16px;gap:16px">
+          <span style="font-family:var(--font-body);font-size:var(--table-size);line-height:var(--table-line);font-weight:var(--fw-semibold);color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.04em">Stage</span>
+          <span style="font-family:var(--font-body);font-size:var(--table-size);line-height:var(--table-line);font-weight:var(--fw-semibold);color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.04em">Target date</span>
+          <span style="font-family:var(--font-body);font-size:var(--table-size);line-height:var(--table-line);font-weight:var(--fw-semibold);color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.04em">Assignees</span>
+        </div>
+        <sc-for list="{{ statusRows }}" as="row" hint-placeholder-count="13">
+          <div style="display:grid;grid-template-columns:220px 1fr 1.3fr;padding:8px 16px;gap:16px;align-items:center;background:{{ row.rowBg }};border-top:1px solid var(--border-subtle)">
+            <div style="display:flex;align-items:center;gap:8px;font-family:var(--font-body);font-size:var(--label-1-size);font-weight:var(--fw-medium);color:var(--text-primary)">
+              <span style="width:8px;height:8px;border-radius:50%;flex-shrink:0;background:{{ row.dot }}"></span>
+              {{ row.label }}
+            </div>
+            <input type="date" value="{{ row.targetDate }}" onChange="{{ row.onDate }}" onClick="{{ stop }}" style="font-family:var(--font-body);font-size:var(--label-1-size);color:var(--text-primary);background:var(--surface-card);border:none;box-shadow:inset 0 0 0 1px var(--border-input);border-radius:var(--radius-sm);padding:9px 12px;outline:none;width:100%" style-focus="box-shadow:inset 0 0 0 1px var(--fca-blue)" />
+            <div onClick="{{ row.onDdClick }}" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--surface-card);box-shadow:inset 0 0 0 1px var(--border-input);border-radius:var(--radius-sm);padding:5px 8px;min-height:42px;cursor:pointer;position:relative">
+              <sc-for list="{{ row.chips }}" as="chip" hint-placeholder-count="0">
+                <x-import component-from-global-scope="FieldControlAnalyticsDesignSystem_019e09.Chip" label="{{ chip.name }}" onRemove="{{ chip.onRemove }}" style="{{ chipStyle }}" hint-size="auto,28px"></x-import>
+              </sc-for>
+              <sc-if value="{{ row.empty }}">
+                <span style="font-family:var(--font-body);font-size:var(--label-1-size);color:var(--text-muted);padding-left:6px">Select</span>
+              </sc-if>
+              <sc-if value="{{ row.ddOpen }}">
+                <div style="position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);box-shadow:var(--shadow-pop);z-index:50;padding:6px;max-height:260px;overflow-y:auto">
+                  <sc-for list="{{ row.options }}" as="opt" hint-placeholder-count="6">
+                    <div onClick="{{ opt.onClick }}" style="padding:9px 12px;border-radius:6px;font-family:var(--font-body);font-size:var(--label-1-size);cursor:pointer;display:flex;align-items:center;gap:8px;color:var(--text-primary);background:{{ opt.bg }};font-weight:{{ opt.fw }}" style-hover="background:var(--fca-blue-wash)">
+                      <span style="width:14px;color:var(--fca-success)">{{ opt.check }}</span>
+                      {{ opt.name }}
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1040,&quot;height&quot;:56},&quot;epic&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Feature&quot;},&quot;api&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;},&quot;isOpen&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  STATUSES = [
+    { key: 'r&d', label: 'R&D', dot: '#00294F' },
+    { key: 'writing-requirements', label: 'Writing requirements', dot: '#00346B' },
+    { key: 'grooming', label: 'Grooming', dot: '#004A91' },
+    { key: 'estimating', label: 'Estimating', dot: '#66A9D9' },
+    { key: 'writing-stories', label: 'Writing stories', dot: '#F59A00' },
+    { key: 'coding', label: 'Coding', dot: '#F59A00' },
+    { key: 'qa', label: 'QA', dot: '#006DF7' },
+    { key: 'release', label: 'Release', dot: '#004A91' },
+    { key: 'testing', label: 'Testing in Release', dot: '#006DF7' },
+    { key: 'staging', label: 'Staging', dot: '#004A91' },
+    { key: 'testing-staging', label: 'Testing in Staging', dot: '#006DF7' },
+    { key: 'release-prep', label: 'Released to Production', dot: '#1BB161' },
+    { key: 'completed', label: 'Completed', dot: '#1BB161' }
+  ];
+  PRIORITIES = [
+    { key: 'blocker', label: 'Blocker', tone: 'error', solid: true },
+    { key: 'critical', label: 'Critical', tone: 'error', solid: false },
+    { key: 'high', label: 'High', tone: 'warning', solid: true },
+    { key: 'medium', label: 'Medium', tone: 'warning', solid: false },
+    { key: 'low', label: 'Low', tone: 'info', solid: false }
+  ];
+  ASSIGNEES = ['Achal','Ankita','Bitu','Dawood','Gaurav','Ilkhom','Kate','Masoom','Michelle','Naveen','Parveen','Pooja','Raghav','Ravi','Swapnil','Tony','Yash'];
+
+  state = { openDd: null, noteAuthor: '', noteText: '' };
+
+  componentDidMount() {
+    this._close = () => { if (this.state.openDd) this.setState({ openDd: null }); };
+    document.addEventListener('click', this._close);
+  }
+  componentWillUnmount() { document.removeEventListener('click', this._close); }
+
+  renderVals() {
+    const epic = this.props.epic || {};
+    const api = this.props.api || {};
+    const isOpen = !!this.props.isOpen;
+    const s = this.STATUSES.find(x => x.key === epic.status) || this.STATUSES[0];
+    const p = this.PRIORITIES.find(x => x.key === epic.priority) || this.PRIORITIES[3];
+    const stop = e => e.stopPropagation();
+    const current = (epic.statusData || {})[epic.status] || { assignees: [], targetDate: '' };
+    const currentNames = current.assignees || [];
+
+    const statusRows = this.STATUSES.map((st, i) => {
+      const sd = (epic.statusData || {})[st.key] || { targetDate: '', assignees: [] };
+      const assignees = sd.assignees || [];
+      const ddOpen = this.state.openDd === st.key;
+      return {
+        key: st.key, label: st.label, dot: st.dot,
+        rowBg: i % 2 === 1 ? 'var(--fca-table-row)' : 'var(--surface-card)',
+        targetDate: sd.targetDate || '',
+        empty: assignees.length === 0,
+        ddOpen,
+        onDdClick: e => { e.stopPropagation(); this.setState({ openDd: ddOpen ? null : st.key }); },
+        onDate: e => api.updateStatusField && api.updateStatusField(epic.id, st.key, 'targetDate', e.target.value),
+        chips: assignees.map(a => ({
+          name: a,
+          onRemove: e => { e.stopPropagation(); api.toggleAssignee && api.toggleAssignee(epic.id, st.key, a); }
+        })),
+        options: this.ASSIGNEES.map(a => {
+          const sel = assignees.includes(a);
+          return {
+            name: a, check: sel ? '✓' : '',
+            bg: sel ? 'var(--fca-blue-subtle)' : 'transparent',
+            fw: sel ? '600' : '400',
+            onClick: e => { e.stopPropagation(); api.toggleAssignee && api.toggleAssignee(epic.id, st.key, a); }
+          };
+        })
+      };
+    });
+
+    return {
+      isOpen, notOpen: !isOpen, stop,
+      rowBg: isOpen ? 'var(--fca-blue-wash)' : 'var(--surface-card)',
+      chevBg: isOpen ? 'var(--fca-navy)' : 'var(--fca-blue-subtle)',
+      chevStroke: isOpen ? '#ffffff' : '#00346B',
+      chevRotate: isOpen ? 'rotate(90deg)' : 'none',
+      chipStyle: { height: 28, fontSize: 12 },
+      gridBadge: { height: 20, fontSize: 11, padding: '0 8px', maxWidth: '100%' },
+      createdLabel: epic.created
+        ? new Date(epic.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : '—',
+      assigneeText: currentNames.length ? currentNames.join(', ') : '—',
+      targetLabel: current.targetDate
+        ? new Date(current.targetDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : '—',
+      targetColor: current.targetDate ? 'var(--text-secondary)' : 'var(--text-muted)',
+      title: epic.title || '', status: epic.status, priority: epic.priority,
+      description: epic.description || '',
+      sLabel: s.label, sTone: epic.status === 'completed' ? 'success' : 'brand',
+      pLabel: p.label, pTone: p.tone, pSolid: p.solid,
+      statusOptions: this.STATUSES.map(x => ({ value: x.key, label: x.label })),
+      priorityOptions: this.PRIORITIES.map(x => ({ value: x.key, label: x.label })),
+      statusRows,
+      links: (epic.links || []).map((l, i) => ({
+        label: l.label || '', url: l.url || '', href: l.url || '#',
+        opacity: l.url ? '1' : '0.3', pe: l.url ? 'auto' : 'none',
+        onLabel: e => api.updateLink && api.updateLink(epic.id, i, 'label', e.target.value),
+        onUrl: e => api.updateLink && api.updateLink(epic.id, i, 'url', e.target.value),
+        onDelete: e => { e.stopPropagation(); api.deleteLink && api.deleteLink(epic.id, i); }
+      })),
+      notes: (epic.notes || []).map((n, i) => ({
+        author: n.author || 'Anonymous', date: n.date || '', text: n.text || '',
+        onDelete: e => { e.stopPropagation(); api.deleteNote && api.deleteNote(epic.id, i); }
+      })),
+      noteAuthor: this.state.noteAuthor, noteText: this.state.noteText,
+      onNoteAuthor: e => this.setState({ noteAuthor: e.target.value }),
+      onNoteText: e => this.setState({ noteText: e.target.value }),
+      onPostNote: e => {
+        if (e && e.stopPropagation) e.stopPropagation();
+        const text = (this.state.noteText || '').trim();
+        if (!text) return;
+        api.addNote && api.addNote(epic.id, (this.state.noteAuthor || '').trim() || 'Anonymous', text);
+        this.setState({ noteText: '' });
+      },
+      onHeaderClick: e => {
+        const t = e.target.tagName;
+        if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON', 'A'].includes(t)) return;
+        api.toggleEpic && api.toggleEpic(epic.id);
+      },
+      onTitle: e => api.updateEpicField && api.updateEpicField(epic.id, 'title', e.target.value),
+      onStatus: v => api.updateEpicField && api.updateEpicField(epic.id, 'status', v),
+      onPriority: v => api.updateEpicField && api.updateEpicField(epic.id, 'priority', v),
+      onDescription: e => api.updateEpicField && api.updateEpicField(epic.id, 'description', e.target.value),
+      onAddLink: e => { if (e && e.stopPropagation) e.stopPropagation(); api.addLink && api.addLink(epic.id); },
+      onDelete: e => { e.stopPropagation(); api.deleteEpic && api.deleteEpic(epic.id); }
+    };
+  }
+}
+
+</script>
+</body>
+</html>
