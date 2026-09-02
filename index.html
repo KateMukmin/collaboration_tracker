@@ -246,7 +246,6 @@
                     <div style="font-family:var(--font-body);font-size:var(--label-1-size);line-height:1.35;font-weight:var(--fw-semibold);margin-bottom:10px;color:{{ card.titleColor }}">{{ card.title }}</div>
                     <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center">
                       <x-import component-from-global-scope="FieldControlAnalyticsDesignSystem_019e09.Badge" tone="{{ card.pTone }}" solid="{{ card.pSolid }}" style="{{ smallBadge }}" hint-size="auto,20px">{{ card.pLabel }}</x-import>
-                      <x-import component-from-global-scope="FieldControlAnalyticsDesignSystem_019e09.Badge" tone="brand" style="{{ smallBadge }}" hint-size="auto,20px">{{ card.monthName }}</x-import>
                     </div>
                     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;min-height:24px">
                       <sc-if value="{{ card.hasAssignees }}">
@@ -759,7 +758,6 @@ class Component extends DCLogic {
             title: epic.title || 'Untitled feature',
             titleColor: epic.title ? 'var(--text-primary)' : 'var(--text-muted)',
             pLabel: p.label, pTone: p.tone, pSolid: p.solid,
-            monthName: monthNameOf(epic.id),
             dateLabel: fmtDate(sd.targetDate), hasDate: !!sd.targetDate,
             people: names.map(n => ({ name: n })), hasAssignees: names.length > 0, maxAvatars: 3,
             onDragStart: e => {
